@@ -824,3 +824,50 @@ fieldset:disabled .input { opacity: .6; }
 .booking-list { list-style: none; margin: 16px 0 0; padding: 0; }
 .booking-card { padding: 14px 0; border-bottom: 1px solid var(--line); }
 .booking-main { display: flex; align-items: center; gap: 12px; width: 100%; padding: 0 0 10px; border: 0; background: none; text-align: left; color: var(--ink); }
+
+/* ── Owner side (S6) ──────────────────────────────────────────────────── */
+
+.balance-card { margin-top: 18px; padding: 20px; border-radius: var(--r-xl); background: var(--ink); color: #fff; }
+.balance-label { font-size: 14px; color: #a9b4c2; font-weight: 600; }
+.balance-amount { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.balance-sub { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.14); }
+.balance-sub span { display: block; font-size: 12px; color: #a9b4c2; }
+.balance-sub b { font-size: 17px; font-variant-numeric: tabular-nums; }
+.week-chart { width: 100%; height: auto; margin-top: 10px; }
+.tx-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.tx-row { border-bottom: 1px solid var(--line); }
+.tx-row:last-child { border-bottom: 0; }
+.tx-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 60px; padding: 10px 0; border: 0; background: none; color: var(--ink); font-size: 16px; }
+.tx-main b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tx-chevron { transition: transform 200ms var(--ease); color: var(--muted); }
+.tx-row.open .tx-chevron { transform: rotate(90deg); }
+.breakdown { margin: 0 0 12px; padding: 12px 14px; border-radius: var(--r-md); background: var(--surface); animation: rise 200ms var(--ease); }
+.breakdown > div { display: flex; justify-content: space-between; padding: 3px 0; font-size: 14px; }
+.breakdown dt { color: var(--ink-3); }
+.breakdown dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
+.breakdown .total { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 16px; }
+.breakdown .total dt, .breakdown .total dd { color: var(--ink); font-weight: 800; }
+.withdraw-amount { padding: 4px 0 2px; }
+.role-card.compact { min-height: 112px; }
+select.input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 36px; }
+
+.owner-spot { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.owner-spot:last-child { border-bottom: 0; }
+.owner-spot-main { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; color: var(--ink); }
+.switch { position: relative; display: inline-flex; width: 52px; height: 44px; align-items: center; flex-shrink: 0; cursor: pointer; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch-track { width: 52px; height: 32px; border-radius: 16px; background: #d0d0d0; position: relative; transition: background-color 180ms; }
+.switch-track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform 180ms var(--ease); }
+.switch input:checked + .switch-track { background: var(--ink); }
+.switch input:checked + .switch-track::after { transform: translateX(20px); }
+.switch input:focus-visible + .switch-track { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+.manage-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.stepper-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.icon-btn:disabled { opacity: .35; }
+.range { width: 100%; margin-top: 12px; accent-color: var(--ink); }
+.sched-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.sched-row { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.sched-row.off span { color: var(--muted); }
+.time-select { height: 44px; flex: 1; padding: 0 30px 0 12px; font-variant-numeric: tabular-nums; }
+.history-list .badge { display: inline-block; line-height: 24px; }

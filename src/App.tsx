@@ -19,6 +19,9 @@ import { Session } from './screens/driver/Session'
 import { MyBookings } from './screens/driver/MyBookings'
 import { SpotDetails } from './screens/driver/SpotDetails'
 import { Landing } from './screens/Landing'
+import { Earnings } from './screens/owner/Earnings'
+import { ManageSpot } from './screens/owner/ManageSpot'
+import { MySpots } from './screens/owner/MySpots'
 import { Requests } from './screens/owner/Requests'
 import { Presenter } from './screens/Presenter'
 
@@ -69,22 +72,9 @@ const routes: Route[] = [
 
   // Owner
   { path: '/owner', render: () => <Shell role="owner"><Requests /></Shell> },
-  {
-    path: '/owner/earnings',
-    render: () => (
-      <Shell role="owner">
-        <ComingSoon title="Earnings" session="S6" checklist={['Gross, 18% commission, gateway fee, net', 'Per booking and in total', 'Withdraw to FPS / bank']} />
-      </Shell>
-    ),
-  },
-  {
-    path: '/owner/spots',
-    render: () => (
-      <Shell role="owner">
-        <ComingSoon title="Your spots" session="S6" checklist={['Active toggle per spot', 'Weekly availability scheduler', 'Booking history']} />
-      </Shell>
-    ),
-  },
+  { path: '/owner/earnings', render: () => <Shell role="owner"><Earnings /></Shell> },
+  { path: '/owner/spots', render: () => <Shell role="owner"><MySpots /></Shell> },
+  { path: '/owner/spots/:id', render: ({ id }) => <Full role="owner"><ManageSpot key={id} id={id} /></Full> },
   { path: '/owner/account', render: () => <Shell role="owner"><Account /></Shell> },
 ]
 

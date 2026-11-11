@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { BottomSheet } from '../../components/BottomSheet'
 import { Icon, type IconName } from '../../components/Icon'
+import { hk2, ownerBalance } from '../../lib/money'
 import { navigate } from '../../lib/router'
-import { signOut, useCurrentUser } from '../../lib/store'
+import { signOut, useCurrentUser, useDB } from '../../lib/store'
 
 export function Account() {
   const user = useCurrentUser()
+  const db = useDB()
   const [sheet, setSheet] = useState<null | 'payment' | 'help'>(null)
   if (!user) return null
 
@@ -13,6 +15,13 @@ export function Account() {
     { icon: 'mail', label: 'Email', value: user.email },
     { icon: 'phone', label: 'Mobile', value: user.phone ?? 'Not added' },
     ...(user.role === 'driver' ? [{ icon: 'car' as IconName, label: 'Vehicle', value: user.vehicle ?? 'Not added' }] : []),
+    ...(user.role === 'owner'
+      ? [
+          { icon: 'plug' as IconName, label: 'Spots', value: `${db.spots.filter((s) => s.ownerId === user.id).length} listed` },
+          { icon: 'wallet' as IconName, label: 'Lifetime earnings (net)', value: hk2(ownerBalance(user.id, db).lifetimeNet) },
+          { icon: 'card' as IconName, label: 'Payout method', value: user.payoutMethod ?? 'Not set — add one when you withdraw' },
+        ]
+      : []),
   ]
 
   return (

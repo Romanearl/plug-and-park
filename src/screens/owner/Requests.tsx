@@ -41,6 +41,10 @@ export function Requests() {
     .filter((b) => (b.status === 'active' || ((b.status === 'confirmed' || b.status === 'paid') && endOf(b).getTime() > Date.now())) && !approved[b.id])
     .sort((a, b) => a.start.localeCompare(b.start))
 
+  const history = mine
+    .filter((b) => b.status === 'declined' || b.status === 'cancelled' || b.status === 'completed')
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+
   const approve = (b: Booking) => {
     const r = approveBooking(b.id)
     setApproved((s) => ({ ...s, [b.id]: r.ok ? 'ok' : 'taken' }))
@@ -130,6 +134,43 @@ export function Requests() {
                         {b.status === 'paid' ? 'Paid' : 'Awaiting payment'}
                       </span>
                     )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+
+          <h2 className="h2" style={{ marginTop: 32 }}>
+            History
+          </h2>
+          {history.length === 0 ? (
+            <p className="muted" style={{ marginTop: 8 }}>
+              Finished, declined and cancelled requests show up here.
+            </p>
+          ) : (
+            <ul className="upcoming-list history-list">
+              {history.map((b) => {
+                const driver = db.users.find((u) => u.id === b.driverId)
+                const start = new Date(b.start)
+                const outcome =
+                  b.status === 'completed'
+                    ? { label: 'Completed', tone: 'green' }
+                    : b.status === 'declined'
+                      ? { label: b.declineReason ? `Declined · ${b.declineReason}` : 'Declined', tone: 'red' }
+                      : { label: 'Cancelled by driver', tone: '' }
+                return (
+                  <li key={b.id} className="list-row" data-booking={b.id}>
+                    <span className="avatar sm">{driver?.name[0] ?? 'D'}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600 }}>{driver?.name ?? 'Driver'}</div>
+                      <div className="caption">
+                        {fmtDate(start)} · {hhmm(start)}–{hhmm(endOf(b))}
+                      </div>
+                      <span className={cx('badge', outcome.tone)} style={{ marginTop: 4, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {outcome.label}
+                      </span>
+                    </div>
+                    {b.status === 'completed' && <b>{hkd(netOf(b))}</b>}
                   </li>
                 )
               })}

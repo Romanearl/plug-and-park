@@ -302,6 +302,154 @@ scenarios.push(
   },
 )
 
+// ── S4: booking core ──
+const asOwner = (context) =>
+  context.addInitScript(() => {
+    try {
+      if (!sessionStorage.getItem('pp.session.main')) sessionStorage.setItem('pp.session.main', 'u_owner_demo')
+    } catch {}
+  })
+
+/** Opens the booking sheet on Kwun Tong and picks tomorrow / time / duration (doesn't submit). */
+async function pickSlot(page, time, dur = '1 h') {
+  const sheet = page.getByRole('dialog', { name: 'Request booking' })
+  if (!(await sheet.isVisible().catch(() => false))) await page.getByRole('button', { name: 'Request booking' }).click()
+  await sheet.getByRole('button', { name: 'Tomorrow', exact: true }).click()
+  await sheet.getByRole('button', { name: time, exact: true }).click()
+  await sheet.getByRole('button', { name: dur, exact: true }).click()
+  return sheet
+}
+async function requestSlot(page, time) {
+  const sheet = await pickSlot(page, time)
+  await sheet.getByRole('button', { name: /^Request booking ·/ }).click()
+  await page.waitForURL(/#\/app\/booking\/bk_/, { timeout: 6000 })
+  return page.url().split('/').pop()
+}
+/** A second tab in the same browser, signed in as someone else (localStorage is shared, sessions aren't). */
+async function otherTab(page, userId, route) {
+  const p2 = await page.context().newPage()
+  await p2.goto(BASE + '#/')
+  await p2.evaluate((u) => sessionStorage.setItem('pp.session.main', u), userId)
+  await p2.goto('about:blank')
+  await p2.goto(BASE + route)
+  return p2
+}
+const KT = '#/app/spot/sp_kwuntong_1'
+
+scenarios.push(
+  { session: 'S4', file: '01-booking-sheet', route: KT, init: asDriver, setup: async (page) => { await page.getByRole('button', { name: 'Request booking' }).click(); await page.waitForTimeout(400) } },
+  { session: 'S4', file: '02-booking-sheet-slot-chosen', route: KT, init: asDriver, setup: async (page) => { await pickSlot(page, '13:00') } },
+  {
+    session: 'S4', file: '03-checking-availability', route: KT, init: asDriver, settle: 0,
+    setup: async (page) => {
+      const sheet = await pickSlot(page, '10:00')
+      await sheet.getByRole('button', { name: /^Request booking ·/ }).click()
+      await sheet.getByText('Checking availability…').waitFor()
+    },
+  },
+  {
+    session: 'S4', file: '04-slot-unavailable-suggestions', route: KT, init: asDriver,
+    setup: async (page) => {
+      const sheet = await pickSlot(page, '10:00')
+      await sheet.getByRole('button', { name: /^Request booking ·/ }).click()
+      await sheet.getByText('This slot is no longer available').waitFor()
+      await sheet.locator('.notice').scrollIntoViewIfNeeded()
+    },
+  },
+  { session: 'S4', file: '05-status-pending', route: KT, init: asDriver, setup: async (page) => { await requestSlot(page, '13:00') } },
+  {
+    session: 'S4', file: '06-status-confirmed', route: KT, init: asDriver,
+    setup: async (page) => {
+      const id = await requestSlot(page, '13:00')
+      const owner = await otherTab(page, 'u_owner_demo', '#/owner')
+      await owner.locator(`.request-card[data-booking="${id}"]`).getByRole('button', { name: 'Approve' }).click()
+      await page.locator('.status-card[data-status="confirmed"]').waitFor()
+      await page.locator('.notify-toast').waitFor({ state: 'detached', timeout: 7000 })
+    },
+  },
+  {
+    session: 'S4', file: '07-toast-notification', route: KT, init: asDriver,
+    setup: async (page) => {
+      const id = await requestSlot(page, '13:00')
+      const owner = await otherTab(page, 'u_owner_demo', '#/owner')
+      await owner.locator(`.request-card[data-booking="${id}"]`).getByRole('button', { name: 'Approve' }).click()
+      await page.getByText('Booking approved — pay to confirm').waitFor()
+    },
+  },
+  {
+    session: 'S4', file: '08-status-declined', route: KT, init: asDriver,
+    setup: async (page) => {
+      const id = await requestSlot(page, '13:00')
+      const owner = await otherTab(page, 'u_owner_demo', '#/owner')
+      await owner.locator(`.request-card[data-booking="${id}"]`).getByRole('button', { name: 'Decline' }).click()
+      await owner.getByRole('button', { name: 'Charger under maintenance' }).click()
+      await page.locator('.status-card[data-status="declined"]').waitFor()
+      await page.locator('.notify-toast').waitFor({ state: 'detached', timeout: 7000 })
+    },
+  },
+  {
+    session: 'S4', file: '09-owner-requests-2-pending', route: '#/owner', init: asOwner,
+    setup: async (page) => {
+      const driver = await otherTab(page, 'u_driver_demo', KT)
+      await requestSlot(driver, '13:00')
+      await page.getByText('2 requests waiting').waitFor()
+      await page.locator('.notify-toast').waitFor({ state: 'detached', timeout: 7000 })
+    },
+  },
+  {
+    session: 'S4', file: '10-decline-reason-sheet', route: '#/owner', init: asOwner,
+    setup: async (page) => {
+      await page.locator('.request-card').first().getByRole('button', { name: 'Decline' }).click()
+      await page.getByRole('dialog', { name: 'Decline request' }).waitFor()
+      await page.waitForTimeout(400)
+    },
+  },
+  {
+    session: 'S4', file: '11-owner-upcoming-after-approve', route: '#/owner', init: asOwner,
+    setup: async (page) => {
+      await page.locator('.request-card').first().getByRole('button', { name: 'Approve' }).click()
+      await page.waitForTimeout(1400)
+      await page.getByText('Awaiting payment').waitFor()
+    },
+  },
+  {
+    session: 'S4', file: '12-owner-empty', route: '#/owner', init: asOwner,
+    setup: async (page) => {
+      await page.locator('.request-card').first().getByRole('button', { name: 'Decline' }).click()
+      await page.getByRole('button', { name: 'I need the bay myself' }).click()
+      await page.getByText('No requests right now').waitFor()
+    },
+  },
+  {
+    session: 'S4', file: '13-presenter-1280x720-before-approve', device: desktop(1280, 720), route: '#/presenter',
+    setup: async (page) => presenterRequest(page),
+  },
+  {
+    session: 'S4', file: '14-presenter-1280x720-after-approve', device: desktop(1280, 720), route: '#/presenter',
+    setup: async (page) => {
+      const id = await presenterRequest(page)
+      const o = page.frameLocator('iframe[name="owner"]')
+      await o.locator(`.request-card[data-booking="${id}"]`).getByRole('button', { name: 'Approve' }).click()
+      await page.frameLocator('iframe[name="driver"]').getByText('Approved! Pay to confirm your booking').waitFor()
+      await page.waitForTimeout(800)
+    },
+  },
+)
+
+async function presenterRequest(page) {
+  const d = page.frameLocator('iframe[name="driver"]')
+  await d.locator('.pin').first().waitFor({ timeout: 10000 })
+  const df = page.frame({ name: 'driver' })
+  await df.evaluate(() => (location.hash = '#/app/spot/sp_kwuntong_1'))
+  const sheet = await pickSlot(d, '13:00')
+  await sheet.getByRole('button', { name: /^Request booking ·/ }).click()
+  await df.waitForURL(/#\/app\/booking\/bk_/, { timeout: 6000 })
+  const id = df.url().split('/').pop()
+  await page.frameLocator('iframe[name="owner"]').locator(`.request-card[data-booking="${id}"]`).waitFor()
+  await page.waitForTimeout(5000) // let the owner's "New booking request" toast clear
+  return id
+}
+
 async function fillRegistration(page, email) {
   await page.getByLabel('Full name').fill('Ho Ka Yan')
   await page.getByLabel('Email').fill(email)

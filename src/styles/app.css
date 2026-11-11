@@ -135,8 +135,8 @@ svg { display: block; flex-shrink: 0; }
   transition: border-color 150ms, background-color 150ms;
 }
 .input::placeholder { color: var(--muted-2); }
-.input:focus { border-color: var(--ink); background: var(--bg); }
-.input.invalid { border-color: var(--danger); background: var(--bg); }
+.input:focus { border-color: var(--ink); background-color: var(--bg); }
+.input.invalid { border-color: var(--danger); background-color: var(--bg); }
 .field-error { font-size: 13px; color: var(--danger); font-weight: 500; }
 .field-hint { font-size: 13px; color: var(--muted); }
 

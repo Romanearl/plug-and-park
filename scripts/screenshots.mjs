@@ -633,6 +633,128 @@ scenarios.push(
   },
 )
 
+// ── S6: owner side ──
+const asUser = (uid) => (context) =>
+  context.addInitScript((u) => {
+    try {
+      if (!sessionStorage.getItem('pp.session.main')) sessionStorage.setItem('pp.session.main', u)
+    } catch {}
+  }, uid)
+async function openWithdraw(page) {
+  await page.getByRole('button', { name: 'Withdraw', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Withdraw' }).waitFor()
+  await page.waitForTimeout(400)
+  return page.getByRole('dialog', { name: 'Withdraw' })
+}
+async function withdrawFps(page) {
+  const sheet = await openWithdraw(page)
+  await sheet.getByRole('button', { name: /^Withdraw HK\$/ }).click()
+  await page.getByText(/On its way/).waitFor()
+}
+const MANAGE = '#/owner/spots/sp_saikung_1'
+const sched = (page) => page.getByRole('heading', { name: 'Availability' }).evaluate((el) => el.scrollIntoView({ block: 'start' }))
+
+scenarios.push(
+  { session: 'S6', file: '01-earnings', route: '#/owner/earnings', init: asOwner },
+  {
+    session: 'S6', file: '02-transaction-expanded', route: '#/owner/earnings', init: asOwner,
+    setup: async (page) => {
+      await page.locator('.tx-row[data-booking="bk_hist_1"] .tx-main').click()
+      await page.locator('.tx-row[data-booking="bk_hist_1"]').evaluate((el) => el.scrollIntoView({ block: 'center' }))
+    },
+  },
+  {
+    session: 'S6', file: '03-pending-escrow', route: '#/owner/earnings', init: asOwner,
+    setup: async (page) => page.getByRole('heading', { name: 'Pending' }).evaluate((el) => el.scrollIntoView({ block: 'start' })),
+  },
+  { session: 'S6', file: '04-withdraw-sheet-fps', route: '#/owner/earnings', init: asOwner, setup: openWithdraw },
+  {
+    session: 'S6', file: '05-withdraw-validation', route: '#/owner/earnings', init: asOwner,
+    setup: async (page) => {
+      const sheet = await openWithdraw(page)
+      await sheet.getByRole('radio', { name: /Bank transfer/ }).click()
+      await sheet.getByLabel('Account number').fill('12345678')
+      await sheet.getByRole('button', { name: /^Withdraw HK\$/ }).click()
+      await sheet.getByText('Enter a 9–12 digit account number').waitFor()
+    },
+  },
+  { session: 'S6', file: '06-withdraw-success', route: '#/owner/earnings', init: asOwner, setup: withdrawFps },
+  {
+    session: 'S6', file: '07-payout-processing', route: '#/owner/earnings', init: asOwner,
+    setup: async (page) => {
+      await withdrawFps(page)
+      await page.getByRole('button', { name: 'Done' }).click()
+      await page.getByRole('heading', { name: 'Payouts' }).evaluate((el) => el.scrollIntoView({ block: 'start' }))
+    },
+  },
+  {
+    session: 'S6', file: '08-payout-paid', route: '#/owner/earnings', init: asOwner,
+    setup: async (page) => {
+      await withdrawFps(page)
+      await page.getByRole('button', { name: 'Done' }).click()
+      await page.locator('[data-payout]').first().getByText('Paid', { exact: true }).waitFor({ timeout: 12000 })
+      await page.getByRole('heading', { name: 'Payouts' }).evaluate((el) => el.scrollIntoView({ block: 'start' }))
+    },
+  },
+  { session: 'S6', file: '09-my-spots', route: '#/owner/spots', init: asOwner },
+  {
+    session: 'S6', file: '10-manage-price', route: MANAGE, init: asOwner,
+    setup: async (page) => {
+      for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Raise price' }).click()
+    },
+  },
+  { session: 'S6', file: '11-scheduler-default', route: MANAGE, init: asOwner, setup: sched },
+  {
+    session: 'S6', file: '12-scheduler-error', route: MANAGE, init: asOwner,
+    setup: async (page) => {
+      await page.getByLabel('Monday to').selectOption('07:00')
+      await sched(page)
+    },
+  },
+  {
+    session: 'S6', file: '13-scheduler-weekday-preset', route: MANAGE, init: asOwner,
+    setup: async (page) => {
+      await page.getByRole('switch', { name: 'Saturday available' }).check({ force: true })
+      await page.getByRole('button', { name: 'Weekdays 08:30–19:00' }).click()
+      await page.getByLabel('Summary').evaluate((el) => el.scrollIntoView({ block: 'end' }))
+    },
+  },
+  {
+    session: 'S6', file: '14-access-section', route: MANAGE, init: asOwner,
+    setup: async (page) => page.getByRole('heading', { name: 'Access' }).evaluate((el) => el.scrollIntoView({ block: 'start' })),
+  },
+  {
+    session: 'S6', file: '15-requests-history', route: '#/owner', init: asOwner,
+    setup: async (page) => page.getByRole('heading', { name: 'History' }).evaluate((el) => el.scrollIntoView({ block: 'start' })),
+  },
+  { session: 'S6', file: '16-earnings-empty-new-owner', route: '#/owner/earnings', init: asUser('u_owner_4') },
+  {
+    session: 'S6', file: '17-presenter-session-ends-balance-moves', device: desktop(1280, 720), route: '#/presenter',
+    setup: async (page) => {
+      const d = page.frameLocator('iframe[name="driver"]')
+      const o = page.frameLocator('iframe[name="owner"]')
+      await d.locator('.pin').first().waitFor({ timeout: 10000 })
+      await o.getByRole('heading', { name: 'Hi, Mei Ling' }).waitFor({ timeout: 10000 })
+      const df = page.frame({ name: 'driver' })
+      const of = page.frame({ name: 'owner' })
+      await of.evaluate(() => (location.hash = '#/owner/earnings'))
+      // A session that started 22 s ago: it finishes ~3 s after the driver opens it.
+      // Write from the top page: the storage event then reaches both iframes (a window never gets its own).
+      await page.evaluate(() => {
+        const db = JSON.parse(localStorage.getItem('pp.db'))
+        const now = Date.now()
+        db.bookings.push({ id: 'bk_shot_end', spotId: 'sp_kwuntong_1', driverId: 'u_driver_demo', ownerId: 'u_owner_demo', start: new Date(now).toISOString(), durationMinutes: 60, price: 30, commissionRate: 0.18, status: 'active', paymentLast4: '4242', pin: '7350', paidAt: new Date(now).toISOString(), startedAt: new Date(now - 22_000).toISOString(), createdAt: new Date(now).toISOString(), updatedAt: new Date(now).toISOString() })
+        localStorage.setItem('pp.db', JSON.stringify(db))
+      })
+      await page.waitForTimeout(300)
+      await df.evaluate(() => (location.hash = '#/app/session/bk_shot_end'))
+      await d.getByText('Session complete').waitFor({ timeout: 10000 })
+      await o.getByText('HK$117.71').first().waitFor({ timeout: 5000 })
+      await page.waitForTimeout(600)
+    },
+  },
+)
+
 async function fillRegistration(page, email) {
   await page.getByLabel('Full name').fill('Ho Ka Yan')
   await page.getByLabel('Email').fill(email)

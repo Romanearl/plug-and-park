@@ -8,7 +8,7 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: dfe
 - [x] S3 Discovery — done 11 Nov (report S3_REPORT.md)
 - [x] S4 Booking core — done 11 Nov (S4_REPORT.md)
 - [x] S5 Driver path — done 11 Nov (S5_REPORT.md)
-- [ ] S6 Owner side — IN PROGRESS: all screens built + committed; next: s6 checks, shots, report
+- [x] S6 Owner side — done 11 Nov (S6_REPORT.md)
 - [ ] S7 Onboarding + branches
 - [ ] S8 Visual polish
 - [ ] S9 Hardening — feature freeze

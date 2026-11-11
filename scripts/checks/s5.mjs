@@ -31,7 +31,10 @@ const IGNORE = /tile\.openstreetmap|basemaps\.cartocdn|fonts\.g|ERR_FAILED|net::
     check('mockGateway declines 4000…0002, approves 4242', !g1.ok && g1.reason === 'Your card was declined. Try another card.' && g2.ok)
     const b = { startedAt: new Date(0).toISOString(), durationMinutes: 60 }
     const half = ses.sessionState(b, { powerKw: 50 }, 12_500)
-    check('sessionState halfway: progress .5, 25 kWh of 50, 30 min left', half.progress === 0.5 && half.energyKwh === 25 && half.totalKwh === 50 && half.minutesLeft === 30, JSON.stringify(half))
+    check('sessionState halfway: progress .5, 19.5 kWh of 39 (battery-capped), 30 min left', half.progress === 0.5 && half.energyKwh === 19.5 && half.totalKwh === 39 && half.minutesLeft === 30, JSON.stringify(half))
+    const ac = ses.sessionState(b, { powerKw: 7.4 }, 12_500)
+    check('sessionState AC 7.4 kW 1 h: 3.7 of 7.4 kWh, battery not capped', ac.totalKwh === 7.4 && ac.energyKwh === 3.7 && ac.batteryPct === 41, JSON.stringify(ac))
+    check('sessionState: battery hits 100% only at the end', ses.sessionState(b, { powerKw: 50 }, 20_000).batteryPct < 100 && ses.sessionState(b, { powerKw: 50 }, 25_000).batteryPct === 100)
     check('sessionState battery from 35%, capped at 100', ses.sessionState(b, { powerKw: 50 }, 0).batteryPct === 35 && ses.sessionState(b, { powerKw: 50 }, 25_000).batteryPct === 100)
     check('nextRating weighted average', ses.nextRating(4.8, 54, 5).rating === 4.8 && ses.nextRating(4.8, 54, 5).reviewsCount === 55 && ses.nextRating(4, 1, 5).rating === 4.5)
   } finally {
@@ -174,7 +177,7 @@ const label = (p, l) => p.getByLabel(l, { exact: true })
   // Completes by itself at the end of the demo time
   check('Completes after ~25 s → "Session complete"', await seen(p.getByText('Session complete'), 30000))
   const comp = await getBooking(p, id)
-  check('Completed: energyKwh (50) + completedAt', comp.status === 'completed' && comp.energyKwh === 50 && !!comp.completedAt, JSON.stringify({ e: comp.energyKwh }))
+  check('Completed: energyKwh (39, battery full) + completedAt', comp.status === 'completed' && comp.energyKwh === 39 && !!comp.completedAt, JSON.stringify({ e: comp.energyKwh }))
   check('Summary shows card ending 4242', await seen(p.getByText('•••• 4242')))
 
   // Rate

@@ -450,6 +450,189 @@ async function presenterRequest(page) {
   return id
 }
 
+// ── S5: driver path ──
+/** Puts a Kwun Tong booking (tomorrow 13:00, 1 h) for the demo driver into the DB, reloads, returns its id. */
+async function seedBooking(page, patch = {}, startedAgoMs) {
+  const id = await page.evaluate(
+    ({ patch, startedAgoMs }) => {
+      const db = JSON.parse(localStorage.getItem('pp.db'))
+      const start = new Date()
+      start.setDate(start.getDate() + 1)
+      start.setHours(13, 0, 0, 0)
+      const id = 'bk_shot' + Math.random().toString(36).slice(2, 6)
+      const now = new Date().toISOString()
+      const extra = startedAgoMs != null ? { startedAt: new Date(Date.now() - startedAgoMs).toISOString() } : {}
+      db.bookings.push({ id, spotId: 'sp_kwuntong_1', driverId: 'u_driver_demo', ownerId: 'u_owner_demo', start: start.toISOString(), durationMinutes: 60, price: 30, commissionRate: 0.18, status: 'confirmed', createdAt: now, updatedAt: now, ...extra, ...patch })
+      localStorage.setItem('pp.db', JSON.stringify(db))
+      return id
+    },
+    { patch, startedAgoMs },
+  )
+  return id
+}
+const PAID = { status: 'paid', paymentLast4: '4242', pin: '7350', paidAt: new Date().toISOString() }
+async function openPay(page) {
+  const id = await seedBooking(page)
+  await page.goto(BASE + `#/app/pay/${id}`)
+  await page.reload()
+  await page.getByLabel('Card number', { exact: true }).waitFor()
+  return id
+}
+async function toSession(page, agoMs, waitRing = true) {
+  const id = await seedBooking(page, { ...PAID, qrPayload: 'x', status: 'active' }, agoMs)
+  await page.goto(BASE + `#/app/session/${id}`)
+  await page.reload()
+  if (waitRing) await page.locator('.ring-wrap').waitFor()
+  return id
+}
+async function completedBooking(page, reviewed = false) {
+  const id = await seedBooking(page, { ...PAID, qrPayload: 'x', status: 'completed', startedAt: new Date().toISOString(), completedAt: new Date().toISOString(), energyKwh: 50, reviewed })
+  return id
+}
+
+scenarios.push(
+  { session: 'S5', file: '01-payment-empty', route: '#/app/bookings', init: asDriver, setup: openPay },
+  {
+    session: 'S5', file: '02-payment-errors', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      await openPay(page)
+      await page.getByLabel('Card number', { exact: true }).fill('1234 5678 9012 3456')
+      await page.getByLabel('Expiry', { exact: true }).fill('0120')
+      await page.getByLabel('CVC', { exact: true }).fill('12')
+      await page.getByRole('button', { name: 'Pay HK$30' }).click({ force: true })
+      await page.getByText('Enter the name on the card').waitFor()
+      await page.getByLabel('Card number', { exact: true }).scrollIntoViewIfNeeded()
+    },
+  },
+  {
+    session: 'S5', file: '03-payment-test-card', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      await openPay(page)
+      await page.getByRole('button', { name: 'Use test card' }).click()
+      await page.getByRole('button', { name: 'Pay HK$30' }).scrollIntoViewIfNeeded()
+    },
+  },
+  {
+    session: 'S5', file: '04-payment-processing', route: '#/app/bookings', init: asDriver, settle: 0,
+    setup: async (page) => {
+      await openPay(page)
+      await page.getByRole('button', { name: 'Use test card' }).click()
+      await page.getByRole('button', { name: 'Pay HK$30' }).click()
+      await page.getByText('Processing…').waitFor()
+    },
+  },
+  {
+    session: 'S5', file: '05-payment-declined', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      await openPay(page)
+      await page.getByRole('button', { name: 'Use test card' }).click()
+      await page.getByLabel('Card number', { exact: true }).fill('4000000000000002')
+      await page.getByRole('button', { name: 'Pay HK$30' }).click()
+      await page.getByText('Your card was declined. Try another card.').waitFor()
+      await page.locator('.scroll').evaluate((el) => el.scrollTo(0, 0))
+    },
+  },
+  {
+    session: 'S5', file: '06-confirmation-qr-pin', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      await openPay(page)
+      await page.getByRole('button', { name: 'Use test card' }).click()
+      await page.getByRole('button', { name: 'Pay HK$30' }).click()
+      await page.getByText("You're booked!").waitFor({ timeout: 6000 })
+      await page.locator('.access-card').scrollIntoViewIfNeeded()
+    },
+  },
+  { session: 'S5', file: '07-session-20pct', route: '#/app/bookings', init: asDriver, setup: (page) => toSession(page, 5_000), settle: 0 },
+  { session: 'S5', file: '08-session-80pct', route: '#/app/bookings', init: asDriver, setup: (page) => toSession(page, 20_000), settle: 0 },
+  {
+    session: 'S5', file: '09-session-summary', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      await toSession(page, 26_000, false)
+      await page.getByText('Session complete').waitFor()
+    },
+  },
+  {
+    session: 'S5', file: '10-rate-empty', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      const id = await completedBooking(page)
+      await page.goto(BASE + `#/app/rate/${id}`)
+      await page.reload()
+      await page.getByText('How was your charge?').waitFor()
+    },
+  },
+  {
+    session: 'S5', file: '11-rate-filled', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      const id = await completedBooking(page)
+      await page.goto(BASE + `#/app/rate/${id}`)
+      await page.reload()
+      await page.getByRole('radio', { name: '5 stars' }).click()
+      await page.getByRole('button', { name: 'Fast charging' }).click()
+      await page.getByRole('button', { name: 'Helpful owner' }).click()
+      await page.getByLabel('Tell other drivers more (optional)').fill('Guard showed me the bay, full in under an hour. Will be back!')
+    },
+  },
+  {
+    session: 'S5', file: '12-rate-thank-you', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      const id = await completedBooking(page)
+      await page.goto(BASE + `#/app/rate/${id}`)
+      await page.reload()
+      await page.getByRole('radio', { name: '5 stars' }).click()
+      await page.getByLabel('Tell other drivers more (optional)').fill('Guard showed me the bay, full in under an hour. Will be back!')
+      await page.getByRole('button', { name: 'Submit review' }).click()
+      await page.getByText('Thanks for your review!').waitFor()
+    },
+  },
+  {
+    session: 'S5', file: '13-bookings-upcoming', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      await seedBooking(page, { status: 'pending' })
+      await seedBooking(page, {})
+      await seedBooking(page, { ...PAID, qrPayload: 'x' })
+      await page.reload()
+      await page.locator('.booking-card').first().waitFor()
+    },
+  },
+  {
+    session: 'S5', file: '14-bookings-past', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      await completedBooking(page, false)
+      await seedBooking(page, { status: 'declined', declineReason: 'Other' })
+      await page.reload()
+      await page.getByRole('tab', { name: 'Past' }).click()
+      await page.locator('.booking-card').first().waitFor()
+    },
+  },
+  {
+    session: 'S5', file: '15-owner-charging-now', route: '#/owner', init: asOwner,
+    setup: async (page) => {
+      await page.evaluate(() => {
+        const db = JSON.parse(localStorage.getItem('pp.db'))
+        const now = new Date().toISOString()
+        db.bookings.push({ id: 'bk_shot_live', spotId: 'sp_kwuntong_1', driverId: 'u_driver_demo', ownerId: 'u_owner_demo', start: now, durationMinutes: 60, price: 30, commissionRate: 0.18, status: 'active', startedAt: now, paymentLast4: '4242', createdAt: now, updatedAt: now })
+        localStorage.setItem('pp.db', JSON.stringify(db))
+      })
+      await page.reload()
+      await page.getByText('Charging now').scrollIntoViewIfNeeded()
+    },
+  },
+  {
+    session: 'S5', file: '16-spot-details-new-review', route: '#/app/bookings', init: asDriver,
+    setup: async (page) => {
+      const id = await completedBooking(page)
+      await page.goto(BASE + `#/app/rate/${id}`)
+      await page.reload()
+      await page.getByRole('radio', { name: '5 stars' }).click()
+      await page.getByRole('button', { name: 'Fast charging' }).click()
+      await page.getByLabel('Tell other drivers more (optional)').fill('Guard showed me the bay, full in under an hour. Will be back!')
+      await page.getByRole('button', { name: 'Submit review' }).click()
+      await page.goto(BASE + '#/app/spot/sp_kwuntong_1')
+      await page.locator('#reviews').evaluate((el) => el.scrollIntoView({ block: 'start' }))
+    },
+  },
+)
+
 async function fillRegistration(page, email) {
   await page.getByLabel('Full name').fill('Ho Ka Yan')
   await page.getByLabel('Email').fill(email)

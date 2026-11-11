@@ -1,4 +1,4 @@
-# Handoff — S1–S4 done, S5 next          Updated: Wed 11 Nov 2026
+# Handoff — S1–S5 done, S6 next          Updated: Wed 11 Nov 2026
 
 ## Start here (next Claude Code session)
 1. Follow the **autonomous run protocol** in `Claude outputs1/CLAUDE.md` §2: read CLAUDE.md (sync the root copy), PLAN.md, `PROGRESS.md` and `REVIEW_FIXES.md`.
@@ -8,8 +8,8 @@
 
 ## State
 - Live: https://romanearl.github.io/plug-and-park/ (the presenter view at `#/presenter` was checked live). Repo: https://github.com/Romanearl/plug-and-park. `gh` is logged in as Romanearl.
-- **S1, S2, S3 and S4 are done.** Reports are `S1_REPORT.md` (S1 + S2), `S3_REPORT.md` and `S4_REPORT.md`. The last green deploy is be49950.
-- `npm run check` = s1 + s2 (62) + s3 (64) + s4 (56), all green.
+- **S1–S5 are done** (reports S1_REPORT … S5_REPORT). DB_VERSION is 3.
+- `npm run check` = s1–s5 all green (s5: 62).
 
 ## Key facts for S5+
 - Map tiles: CARTO now needs a key, so we use `tile.openstreetmap.org` (see S3_REPORT). The reviewer should update CLAUDE.md §3.

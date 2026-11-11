@@ -10,7 +10,7 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: fb6
 - [x] S5 Driver path — done 11 Nov (S5_REPORT.md)
 - [x] S6 Owner side — done 11 Nov (S6_REPORT.md)
 - [x] S7 Onboarding + branches — done 11 Nov (S7_REPORT.md)
-- [ ] S8 Visual polish
+- [x] S8 Visual polish — done 11 Nov (S8_REPORT.md)
 - [ ] S9 Hardening — feature freeze
 - [ ] S10 Demo kit
 

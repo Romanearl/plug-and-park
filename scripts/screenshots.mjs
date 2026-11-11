@@ -7,16 +7,12 @@
 // browser contexts (clean storage), and always stops the server. Fails loudly on page
 // errors or console errors (font and map-tile network errors are ignored).
 
-import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
+import { BASE, ROOT, build, startPreview } from './lib/server.mjs'
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT_ROOT = path.join(ROOT, 'Claude outputs1', 'screenshots')
-const PORT = 4173
-const BASE = `http://localhost:${PORT}/plug-and-park/`
 
 const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
 const desktop = (width, height) => ({ viewport: { width, height }, deviceScaleFactor: 1 })
@@ -195,44 +191,6 @@ async function loginAsDemo(page) {
   await page.getByLabel('Digit 1 of 6').waitFor()
 }
 
-// ── Server ──────────────────────────────────────────────────────────────────
-
-// Vite's JS entry, run with node directly (no shell): cross-platform, and kill() really stops it.
-const VITE_BIN = path.join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js')
-
-function build() {
-  const r = spawnSync(process.execPath, [VITE_BIN, 'build'], { cwd: ROOT, stdio: 'inherit' })
-  if (r.status !== 0) throw new Error(`vite build failed (exit ${r.status})`)
-}
-
-async function waitForServer(url, timeoutMs = 20_000) {
-  const until = Date.now() + timeoutMs
-  while (Date.now() < until) {
-    try {
-      const res = await fetch(url)
-      if (res.ok) return
-    } catch {
-      /* not up yet */
-    }
-    await new Promise((r) => setTimeout(r, 250))
-  }
-  throw new Error(`Preview server did not start at ${url}`)
-}
-
-function startPreview() {
-  return spawn(process.execPath, [VITE_BIN, 'preview', '--port', String(PORT), '--strictPort'], {
-    cwd: ROOT,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
-}
-
-function stopPreview(server) {
-  if (!server || server.exitCode !== null) return
-  if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(server.pid), '/T', '/F'], { stdio: 'ignore' })
-  else server.kill('SIGTERM')
-}
-
-// ── Main ────────────────────────────────────────────────────────────────────
 
 const IGNORED = /fonts\.googleapis|fonts\.gstatic|basemaps\.cartocdn|tile\.openstreetmap|favicon/i
 
@@ -244,18 +202,12 @@ async function main() {
   if (todo.length === 0) throw new Error(`No scenarios for ${arg}`)
 
   build()
-  const server = startPreview()
-  const cleanup = () => stopPreview(server)
-  process.on('SIGINT', () => {
-    cleanup()
-    process.exit(130)
-  })
+  const cleanup = await startPreview()
 
   const problems = []
   let count = 0
   let browser
   try {
-    await waitForServer(BASE)
     browser = await chromium.launch()
 
     for (const session of sessions) {
@@ -266,6 +218,7 @@ async function main() {
 
     for (const sc of todo) {
       const context = await browser.newContext({ ...(sc.device ?? PHONE), reducedMotion: 'reduce' })
+      if (sc.init) await sc.init(context)
       const page = await context.newPage()
       const tag = `${sc.session}/${sc.file}`
       page.on('pageerror', (err) => problems.push(`${tag}: page error: ${err.message}`))

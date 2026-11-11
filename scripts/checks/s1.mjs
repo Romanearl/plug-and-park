@@ -1,8 +1,8 @@
 // Checks the S1 "done when" items against a running `vite preview` on :4173.
-// Run with `npm run preview` (port 4173) in another terminal: node scripts/checks/s1.mjs
+// Run via `npm run check` (or with `npm run preview` running: node scripts/checks/s1.mjs)
 import { chromium } from 'playwright'
 
-const BASE = 'http://localhost:4173/plug-and-park/'
+const BASE = process.env.PP_BASE ?? 'http://localhost:4173/plug-and-park/'
 const results = []
 const check = (name, ok, extra = '') => results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}${extra ? ' - ' + extra : ''}`)
 

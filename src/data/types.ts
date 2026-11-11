@@ -97,6 +97,8 @@ export interface Booking {
   /** kWh delivered — filled in by the simulated charging session. */
   energyKwh?: number
   reviewed?: boolean
+  /** Why the owner (or the platform re-check) declined. */
+  declineReason?: string
 }
 
 export interface Review {

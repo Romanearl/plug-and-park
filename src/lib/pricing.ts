@@ -7,6 +7,9 @@ export function priceFor(spot: Pick<Spot, 'pricePerHour'>, minutes: number): num
   return Math.round(((spot.pricePerHour * minutes) / 60) * 2) / 2
 }
 
+/** What the owner keeps after the platform's commission, e.g. 30 × (1 − 0.18) = 24.60. */
+export const ownerEarnings = (price: number, commissionRate: number) => Math.round(price * (1 - commissionRate) * 100) / 100
+
 /** DC fast charging from 40 kW. */
 export const isDcFast = (spot: Pick<Spot, 'powerKw'>) => spot.powerKw >= 40
 

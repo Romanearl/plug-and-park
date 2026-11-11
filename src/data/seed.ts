@@ -4,7 +4,7 @@
 import type { AvailabilityWindow, Booking, DB, Review, Spot, User } from './types'
 import { addMinutes, dayAt, fakeHash } from '../lib/util'
 
-export const DB_VERSION = 1
+export const DB_VERSION = 2 // 2: Booking.declineReason (S4)
 
 export const DEMO_PASSWORD = 'Demo1234!'
 export const DEMO_OTP = '123456'

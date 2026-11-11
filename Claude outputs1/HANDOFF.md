@@ -1,15 +1,15 @@
-# Handoff — S1–S8 done, S9 next          Updated: Wed 11 Nov 2026
+# Handoff — S1–S9 done + FROZEN (v1.0-freeze), S10 next          Updated: Wed 11 Nov 2026
 
 ## Start here (next Claude Code session)
 1. Follow the **autonomous run protocol** in `Claude outputs1/CLAUDE.md` §2: read CLAUDE.md (sync the root copy), PLAN.md, `PROGRESS.md` and `REVIEW_FIXES.md`.
 2. Run `git status` and `git log --oneline -8`. If there's uncommitted work, finish it and commit it. Never discard it.
-3. Continue at the first unfinished session in `PROGRESS.md` (S9 → S10; every task file exists).
+3. Continue at the first unfinished session in `PROGRESS.md` (S10 is the last session (demo kit: docs, screenshots, video — no features)).
 4. Roman's standing permission is to commit and push to `main` without asking. Destructive git commands are still off-limits.
 
 ## State
 - Live: https://romanearl.github.io/plug-and-park/ (the presenter view at `#/presenter` was checked live). Repo: https://github.com/Romanearl/plug-and-park. `gh` is logged in as Romanearl.
-- **S1–S8 are done** (reports S1_REPORT … S8_REPORT). DB_VERSION is 5.
-- `npm run check` = s1–s8 all green (s8: 24). It takes about 10 minutes, so run it in the background or per file (`node scripts/check.mjs s5`).
+- **S1–S9 are done**, tagged **v1.0-freeze** (d5bb4d7). Code is frozen: only REVIEW_FIXES.md bug fixes.
+- `npm run check` = s1–s9 all green (~12 min). `npm run smoke` = demo path (~2 min); `--url <live>`, `--browser webkit|firefox`, `--runs 5`.
 
 ## Key facts for S9+
 - Map tiles: CARTO now needs a key, so we use `tile.openstreetmap.org` (see S3_REPORT). The reviewer should update CLAUDE.md §3.

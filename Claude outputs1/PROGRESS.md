@@ -1,6 +1,6 @@
 # Progress            Last updated: Wed 11 Nov 2026 14:40
 Repo: https://github.com/Romanearl/plug-and-park (public)
-Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 9cd8d97 (S8)
+Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: d5bb4d7 (S9, tagged v1.0-freeze)
 
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599
@@ -13,6 +13,12 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 9cd
 - [x] S8 Visual polish — done 11 Nov (S8_REPORT.md)
 - [x] S9 Hardening — done 11 Nov (S9_REPORT.md) — FEATURE FREEZE, tag v1.0-freeze
 - [ ] S10 Demo kit
+
+## Freeze
+- Tag: **v1.0-freeze** → commit d5bb4d7 (pushed)
+- Live URL: https://romanearl.github.io/plug-and-park/
+- Last green smoke test on the live site: Wed 11 Nov 2026 18:54 HKT (Chromium, full demo path + presenter)
+- From now on: only REVIEW_FIXES.md bug fixes; next session is S10 (demo kit — docs/video, no code features).
 
 ## Review fixes done
 - RF-1 — repo created + pushed, Pages enabled (GitHub Actions source), deploy green, live URL + deep-link refresh (#/owner) verified with Playwright, no console errors.

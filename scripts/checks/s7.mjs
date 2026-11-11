@@ -246,7 +246,8 @@ let newSpotId = null
   await o.goto(BASE + '#/owner/earnings')
   await o.getByRole('button', { name: 'Withdraw', exact: true }).click()
   await o.getByRole('button', { name: /^Withdraw HK\$/ }).dblclick()
-  await o.waitForTimeout(300)
+  await o.getByText(/On its way/).waitFor({ timeout: 3000 }).catch(() => {}) // after the "Sending…" step
+  await o.waitForTimeout(400)
   check('Withdraw double tap → one payout', (await dbOf(o)).payouts.length === 1)
   await c2.close()
 

@@ -239,6 +239,7 @@ function WithdrawSheet({ open, onClose, available, ownerId, phone, preferred }: 
   const [account, setAccount] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<Payout | null>(null)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -255,11 +256,17 @@ function WithdrawSheet({ open, onClose, available, ownerId, phone, preferred }: 
     if (err) return
     const last4 = (method === 'FPS' ? fps.replace(/\D/g, '') : account.replace(/\D/g, '')).slice(-4)
     const destination = method === 'FPS' ? (fps.includes('@') ? `FPS ${fps.trim().replace(/^(.).*(@.*)$/, '$1•••$2')}` : `FPS •••• ${last4}`) : `${bank} •••• ${last4}`
-    const r = requestPayout(ownerId, method, destination)
-    if (r.ok) {
-      setAccount('') // never keep the full account number around
-      setDone(r.value)
-    } else setError(r.reason)
+    if (sending) return
+    setSending(true)
+    // Short "Sending…" state: the mock bank/FPS request.
+    window.setTimeout(() => {
+      const r = requestPayout(ownerId, method, destination)
+      setSending(false)
+      if (r.ok) {
+        setAccount('') // never keep the full account number around
+        setDone(r.value)
+      } else setError(r.reason)
+    }, 600)
   }
 
   return (
@@ -326,8 +333,14 @@ function WithdrawSheet({ open, onClose, available, ownerId, phone, preferred }: 
               </div>
             )}
           </div>
-          <button className={cx('btn btn-primary block')} style={{ marginTop: 20 }} disabled={available <= 0} onClick={submit}>
-            Withdraw {hkd(available)}
+          <button className={cx('btn btn-primary block')} style={{ marginTop: 20 }} disabled={available <= 0 || sending} aria-busy={sending} onClick={submit}>
+            {sending ? (
+              <>
+                <span className="spinner" aria-hidden /> Sending…
+              </>
+            ) : (
+              `Withdraw ${hkd(available)}`
+            )}
           </button>
         </>
       )}

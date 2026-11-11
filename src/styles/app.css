@@ -871,3 +871,45 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
 .sched-row.off span { color: var(--muted); }
 .time-select { height: 44px; flex: 1; padding: 0 30px 0 12px; font-variant-numeric: tabular-nums; }
 .history-list .badge { display: inline-block; line-height: 24px; }
+
+/* ── Onboarding (S7) ──────────────────────────────────────────────────── */
+
+.clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.welcome-card { margin-top: 18px; padding: 22px 20px; border-radius: var(--r-xl); background: var(--blue-tint); }
+.benefits { list-style: none; margin: 14px 0 0; padding: 0; }
+.benefits li { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-weight: 600; }
+.benefits svg { color: var(--blue-deep); }
+.app-card { margin-top: 16px; padding: 16px; border-radius: var(--r-lg); background: var(--surface); }
+.app-card.amber { background: var(--warning-tint); color: var(--warning); }
+.app-card.amber p, .app-card.amber .clamp-2 { color: var(--ink); }
+.app-card.green { background: var(--success-tint); }
+.app-card.green > .row { color: var(--success); }
+.pulse-dot.small { width: 12px; height: 12px; }
+.progress { height: 6px; margin-top: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.progress span { display: block; height: 100%; border-radius: 3px; background: var(--ink); transition: width 280ms var(--ease); }
+.role-card.tight { min-height: 64px; justify-content: center; }
+.mini-map { position: relative; height: 200px; border-radius: var(--r-lg); overflow: hidden; background: #e9eef3; }
+.mini-map .leaflet-tile-pane { filter: grayscale(0.85) brightness(1.06) contrast(0.88); }
+.mini-attrib { position: absolute; right: 6px; bottom: 4px; z-index: 500; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,.8); font-size: 10px; color: var(--muted); }
+.map-placeholder { display: flex; align-items: center; justify-content: center; height: 120px; border-radius: var(--r-lg); background: var(--surface); color: var(--muted); font-size: 14px; }
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.photo-tile { position: relative; aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+.photo-img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.photo-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 100%; border: 2px dashed #cfcfcf; border-radius: var(--r-md); background: none; color: var(--ink-3); }
+.photo-remove { top: 4px; right: 4px; width: 32px; height: 32px; }
+.timeline { list-style: none; margin: 24px 0 0; padding: 0; }
+.timeline li { position: relative; display: flex; gap: 14px; padding-bottom: 22px; color: var(--muted); }
+.timeline li:not(:last-child)::before { content: ""; position: absolute; left: 11px; top: 26px; bottom: 2px; width: 2px; background: var(--line); }
+.timeline .dot { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); flex-shrink: 0; }
+.timeline li.done { color: var(--ink); }
+.timeline li.done .dot { background: var(--blue); }
+.timeline li.current { color: var(--ink); }
+.timeline li.current .dot { background: var(--ink); box-shadow: 0 0 0 4px var(--blue-tint); }
+.admin-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.admin-list li { padding: 12px; border-radius: var(--r-md); background: var(--surface); }
+.admin-list li + li { margin-top: 8px; }
+.branch-list { margin: 8px 0 0; }
+.branch-list > div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--surface-2); font-size: 14px; }
+.branch-list dt { font-weight: 700; }
+.branch-list dd { margin: 0; color: var(--muted); text-align: right; }
+.list-row > div > div:first-child, .tx-main > div > div:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

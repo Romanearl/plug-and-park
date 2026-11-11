@@ -4,10 +4,12 @@
 import { useEffect, useState } from 'react'
 import { BottomSheet } from '../../components/BottomSheet'
 import { Icon } from '../../components/Icon'
-import type { Booking, User } from '../../data/types'
+import type { Booking, Spot, User } from '../../data/types'
 import { endOf, fmtDuration, hhmm } from '../../lib/booking'
 import { approveBooking, declineBooking, DECLINE_REASONS } from '../../lib/bookingActions'
+import { awaitingSetup } from '../../lib/applyActions'
 import { netOf } from '../../lib/money'
+import { navigate } from '../../lib/router'
 import { useCurrentUser, useDB } from '../../lib/store'
 import { cx, fmtDate, hkd } from '../../lib/util'
 
@@ -31,6 +33,9 @@ export function Requests() {
   }, [notice])
 
   if (!user) return null
+  const mySpots = db.spots.filter((s) => s.ownerId === user.id)
+  if (mySpots.length === 0) return <Welcome name={givenName(user.name)} />
+  const applications = mySpots.filter((s) => s.reviewStatus !== 'approved' || awaitingSetup(s))
   const mine = db.bookings.filter((b) => b.ownerId === user.id)
   // Cards that were just approved stay in place for a moment to show the success state.
   const pending = mine
@@ -68,6 +73,10 @@ export function Requests() {
           <p className="muted" style={{ marginTop: 4 }} aria-live="polite">
             {waiting === 0 ? 'No requests waiting' : waiting === 1 ? '1 request waiting' : `${waiting} requests waiting`}
           </p>
+
+          {applications.map((s) => (
+            <ApplicationCard key={s.id} spot={s} />
+          ))}
 
           {notice && (
             <div className="banner error" role="alert" style={{ marginTop: 16 }}>
@@ -258,5 +267,85 @@ function RequestCard({
         </div>
       )}
     </article>
+  )
+}
+
+function Welcome({ name }: { name: string }) {
+  return (
+    <div className="screen-view">
+      <div className="scroll">
+        <div className="page rise" style={{ paddingTop: 20, paddingBottom: 28 }}>
+          <h1 className="h1">Hi, {name}</h1>
+          <section className="welcome-card">
+            <span className="empty-icon" style={{ background: 'var(--blue)', color: 'var(--ink)' }}>
+              <Icon name="plug" size={30} />
+            </span>
+            <h2 className="h2" style={{ marginTop: 16 }}>
+              List your charger and earn while you’re at work
+            </h2>
+            <ul className="benefits">
+              <li>
+                <Icon name="wallet" size={20} /> Earn HK$20–35 per hour
+              </li>
+              <li>
+                <Icon name="check" size={20} /> You approve every booking
+              </li>
+              <li>
+                <Icon name="bolt" size={20} /> Paid out by FPS
+              </li>
+            </ul>
+            <button className="btn btn-primary block" style={{ marginTop: 18 }} onClick={() => navigate('/owner/apply')}>
+              List my charger
+            </button>
+          </section>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ApplicationCard({ spot }: { spot: Spot }) {
+  if (spot.reviewStatus === 'changes_requested')
+    return (
+      <section className="app-card amber" data-application={spot.id}>
+        <div className="row" style={{ gap: 8, fontWeight: 700 }}>
+          <Icon name="info" size={20} /> Plug &amp; Park asked for changes
+        </div>
+        <div className="clamp-2" style={{ marginTop: 4, fontWeight: 600 }}>
+          {spot.title}
+        </div>
+        <p style={{ marginTop: 4, fontSize: 15 }}>“{spot.reviewNote}”</p>
+        <button className="btn btn-primary block sm" style={{ marginTop: 12 }} onClick={() => navigate(`/owner/apply/${spot.id}`)}>
+          Edit application
+        </button>
+      </section>
+    )
+  if (spot.reviewStatus === 'in_review')
+    return (
+      <section className="app-card" data-application={spot.id}>
+        <div className="row" style={{ gap: 8, fontWeight: 700 }}>
+          <span className="pulse-dot small" aria-hidden /> Application under review
+        </div>
+        <div className="clamp-2" style={{ marginTop: 4, fontWeight: 600 }}>
+          {spot.title}
+        </div>
+        <p className="caption" style={{ marginTop: 2 }}>
+          Not visible to drivers yet. We’ll notify you when it’s approved.
+        </p>
+      </section>
+    )
+  return (
+    <section className="app-card green" data-application={spot.id}>
+      <div className="row" style={{ gap: 8, fontWeight: 700 }}>
+        <Icon name="check" size={20} stroke={3} /> You’re approved — one last step
+      </div>
+      <div className="clamp-2" style={{ marginTop: 4, fontWeight: 600 }}>
+        {spot.title}
+      </div>
+      <p style={{ marginTop: 4, fontSize: 15 }}>Add your gate PIN and payout details to go live.</p>
+      <button className="btn btn-primary block sm" style={{ marginTop: 12 }} onClick={() => navigate(`/owner/setup/${spot.id}`)}>
+        Finish setup
+      </button>
+    </section>
   )
 }

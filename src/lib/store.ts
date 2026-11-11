@@ -69,6 +69,10 @@ let sessionUserId: string | null = safeGet('session', sessionKey())
 window.addEventListener('storage', (e) => {
   if (e.key === DB_KEY || e.key === null) {
     db = parseDB(e.newValue) ?? loadDB()
+    if (sessionUserId && !db.users.some((u) => u.id === sessionUserId)) {
+      sessionUserId = null
+      safeSet('session', sessionKey(), null)
+    }
     emit()
   }
 })

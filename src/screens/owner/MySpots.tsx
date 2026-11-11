@@ -1,6 +1,8 @@
 // Owner → My spots: list with an active switch (off = hidden from drivers, live).
 
+import { useEffect, useState } from 'react'
 import { Icon } from '../../components/Icon'
+import { takeFlash } from '../../lib/flash'
 import { SpotPhoto } from '../../components/SpotPhoto'
 import { setSpotActive } from '../../lib/ownerActions'
 import { navigate } from '../../lib/router'
@@ -10,6 +12,12 @@ import { hkd } from '../../lib/util'
 export function MySpots() {
   const db = useDB()
   const user = useCurrentUser()
+  const [toast, setToast] = useState<string | null>(() => takeFlash())
+  useEffect(() => {
+    if (!toast) return
+    const t = window.setTimeout(() => setToast(null), 3500)
+    return () => window.clearTimeout(t)
+  }, [toast])
   if (!user) return null
   const spots = db.spots.filter((s) => s.ownerId === user.id)
   return (
@@ -36,17 +44,21 @@ export function MySpots() {
             <ul className="spot-list" style={{ marginTop: 12 }}>
               {spots.map((s) => (
                 <li key={s.id} className="owner-spot" data-spot={s.id}>
-                  <button className="owner-spot-main" onClick={() => navigate(`/owner/spots/${s.id}`)}>
+                  <button className="owner-spot-main" onClick={() => navigate(s.reviewStatus !== 'approved' ? (s.reviewStatus === 'changes_requested' ? `/owner/apply/${s.id}` : '/owner') : !s.accessPin ? `/owner/setup/${s.id}` : `/owner/spots/${s.id}`)}>
                     <SpotPhoto spot={s} className="spot-thumb" />
                     <span className="spot-card-body">
                       <span className="spot-card-title">{s.title}</span>
                       <span className="caption">
                         {s.district} · {hkd(s.pricePerHour)}/h · ★ {s.rating.toFixed(1)}
                       </span>
-                      {!s.active && <span className="badge" style={{ marginTop: 4 }}>Hidden from drivers</span>}
+                      {s.reviewStatus !== 'approved' ? (
+                        <span className="badge amber" style={{ marginTop: 4 }}>{s.reviewStatus === 'in_review' ? 'In review' : 'Changes requested'}</span>
+                      ) : (
+                        !s.active && <span className="badge" style={{ marginTop: 4 }}>{s.accessPin ? 'Hidden from drivers' : 'Finish setup to go live'}</span>
+                      )}
                     </span>
                   </button>
-                  <label className="switch" aria-label={`${s.title} listed`}>
+                  <label className="switch" aria-label={`${s.title} listed`} hidden={s.reviewStatus !== 'approved' || !s.accessPin}>
                     <input type="checkbox" role="switch" checked={s.active} onChange={(e) => setSpotActive(s.id, user.id, e.target.checked)} />
                     <span className="switch-track" aria-hidden />
                   </label>
@@ -56,6 +68,11 @@ export function MySpots() {
           )}
         </div>
       </div>
+      {toast && (
+        <div className="toast" role="status">
+          <Icon name="check" size={18} stroke={2.5} /> {toast}
+        </div>
+      )}
     </div>
   )
 }

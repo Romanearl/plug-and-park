@@ -20,6 +20,7 @@ import { MyBookings } from './screens/driver/MyBookings'
 import { SpotDetails } from './screens/driver/SpotDetails'
 import { Landing } from './screens/Landing'
 import { Earnings } from './screens/owner/Earnings'
+import { FinishSetup } from './screens/owner/FinishSetup'
 import { ManageSpot } from './screens/owner/ManageSpot'
 import { MySpots } from './screens/owner/MySpots'
 import { Requests } from './screens/owner/Requests'
@@ -27,6 +28,7 @@ import { Presenter } from './screens/Presenter'
 
 // Leaflet is heavy — load the map only when the driver opens Explore.
 const MapHome = lazy(() => import('./screens/driver/MapHome'))
+const Apply = lazy(() => import('./screens/owner/Apply'))
 
 function Loading() {
   return (
@@ -75,6 +77,9 @@ const routes: Route[] = [
   { path: '/owner/earnings', render: () => <Shell role="owner"><Earnings /></Shell> },
   { path: '/owner/spots', render: () => <Shell role="owner"><MySpots /></Shell> },
   { path: '/owner/spots/:id', render: ({ id }) => <Full role="owner"><ManageSpot key={id} id={id} /></Full> },
+  { path: '/owner/apply', render: () => <Full role="owner"><Suspense fallback={<Loading />}><Apply /></Suspense></Full> },
+  { path: '/owner/apply/:id', render: ({ id }) => <Full role="owner"><Suspense fallback={<Loading />}><Apply key={id} spotId={id} /></Suspense></Full> },
+  { path: '/owner/setup/:id', render: ({ id }) => <Full role="owner"><FinishSetup key={id} id={id} /></Full> },
   { path: '/owner/account', render: () => <Shell role="owner"><Account /></Shell> },
 ]
 

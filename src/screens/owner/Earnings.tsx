@@ -227,13 +227,13 @@ export function Earnings() {
           )}
         </div>
       </div>
-      <WithdrawSheet open={withdrawing} onClose={() => setWithdrawing(false)} available={bal.available} ownerId={user.id} phone={user.phone} />
+      <WithdrawSheet open={withdrawing} onClose={() => setWithdrawing(false)} available={bal.available} ownerId={user.id} phone={user.phone} preferred={user.payoutMethod?.type} />
     </div>
   )
 }
 
-function WithdrawSheet({ open, onClose, available, ownerId, phone }: { open: boolean; onClose: () => void; available: number; ownerId: string; phone?: string }) {
-  const [method, setMethod] = useState<'FPS' | 'Bank transfer'>('FPS')
+function WithdrawSheet({ open, onClose, available, ownerId, phone, preferred }: { open: boolean; onClose: () => void; available: number; ownerId: string; phone?: string; preferred?: 'FPS' | 'Bank transfer' }) {
+  const [method, setMethod] = useState<'FPS' | 'Bank transfer'>(preferred ?? 'FPS')
   const [fps, setFps] = useState(phone ?? '')
   const [bank, setBank] = useState(BANKS[0])
   const [account, setAccount] = useState('')

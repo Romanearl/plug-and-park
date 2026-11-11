@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { DEMO_ACCOUNTS, DEMO_CARDS, DEMO_OTP, DEMO_PASSWORD } from '../data/seed'
 import { navigate } from '../lib/router'
+import { platformApprove, platformRequestChanges } from '../lib/applyActions'
 import { completeSession } from '../lib/bookingActions'
 import { resetDemo, signIn, useCurrentUser, useDB } from '../lib/store'
 import { BottomSheet } from './BottomSheet'
@@ -29,6 +30,7 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const user = useCurrentUser()
   const db = useDB()
   const active = user ? db.bookings.find((b) => b.driverId === user.id && b.status === 'active') : undefined
+  const inReview = db.spots.filter((s) => s.reviewStatus === 'in_review')
   const [confirmReset, setConfirmReset] = useState(false)
 
   useEffect(() => {
@@ -131,6 +133,58 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
           </button>
         )}
       </div>
+
+      <div className="overline muted" style={{ marginTop: 22 }}>
+        Platform (admin) actions
+      </div>
+      {inReview.length === 0 ? (
+        <p className="caption" style={{ marginTop: 6 }}>
+          No applications in review. Submit one from an owner account (List my charger).
+        </p>
+      ) : (
+        <ul className="admin-list">
+          {inReview.map((s) => (
+            <li key={s.id} data-admin-spot={s.id}>
+              <div style={{ fontWeight: 600 }} className="clamp-2">
+                {s.title}
+              </div>
+              <div className="caption">
+                {db.users.find((u) => u.id === s.ownerId)?.name ?? 'Owner'} · {s.district}
+              </div>
+              <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                <button className="btn btn-primary sm" style={{ flex: 1 }} onClick={() => platformApprove(s.id)}>
+                  Approve
+                </button>
+                <button className="btn btn-secondary sm" style={{ flex: 1 }} onClick={() => platformRequestChanges(s.id)}>
+                  Request changes
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="overline muted" style={{ marginTop: 22 }}>
+        Show a “No” branch
+      </div>
+      <dl className="branch-list">
+        <div>
+          <dt>Spot unavailable</dt>
+          <dd>Book Kwun Tong tomorrow at 10:00</dd>
+        </div>
+        <div>
+          <dt>Owner declines</dt>
+          <dd>Decline the request on the owner phone</dd>
+        </div>
+        <div>
+          <dt>Payment fails</dt>
+          <dd>Pay with 4000 0000 0000 0002</dd>
+        </div>
+        <div>
+          <dt>Application needs changes</dt>
+          <dd>Use Platform actions above</dd>
+        </div>
+      </dl>
     </BottomSheet>
   )
 }

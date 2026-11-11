@@ -4,7 +4,7 @@
 import type { AvailabilityWindow, Booking, DB, Review, Spot, User } from './types'
 import { addMinutes, dayAt, fakeHash } from '../lib/util'
 
-export const DB_VERSION = 2 // 2: Booking.declineReason (S4)
+export const DB_VERSION = 3 // 2: Booking.declineReason (S4) · 3: paidAt / startedAt / completedAt (S5)
 
 export const DEMO_PASSWORD = 'Demo1234!'
 export const DEMO_OTP = '123456'
@@ -150,7 +150,17 @@ function spots(): Spot[] {
 
 function bookings(): Booking[] {
   const now = new Date().toISOString()
-  const b = (x: Omit<Booking, 'createdAt' | 'updatedAt'>): Booking => ({ ...x, createdAt: now, updatedAt: now })
+  const b = (x: Omit<Booking, 'createdAt' | 'updatedAt'>): Booking => {
+    const end = addMinutes(x.start, x.durationMinutes)
+    const created = addMinutes(x.start, -24 * 60)
+    return {
+      ...x,
+      createdAt: x.status === 'pending' ? now : created,
+      updatedAt: now,
+      ...(x.status === 'completed' || x.status === 'paid' ? { paidAt: addMinutes(created, 30) } : {}),
+      ...(x.status === 'completed' ? { startedAt: x.start, completedAt: end } : {}),
+    }
+  }
   return [
     // Already-finished bookings: give the owner dashboard real earnings history.
     b({ id: 'bk_hist_1', spotId: 'sp_kwuntong_1', driverId: 'u_driver_3', ownerId: 'u_owner_demo', start: dayAt(-6, '10:00'), durationMinutes: 60, price: 30, commissionRate: 0.18, status: 'completed', energyKwh: 38.2, reviewed: true, paymentLast4: '4242' }),

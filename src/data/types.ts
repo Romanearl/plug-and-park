@@ -99,6 +99,9 @@ export interface Booking {
   reviewed?: boolean
   /** Why the owner (or the platform re-check) declined. */
   declineReason?: string
+  paidAt?: string
+  startedAt?: string
+  completedAt?: string
 }
 
 export interface Review {
@@ -108,6 +111,8 @@ export interface Review {
   driverId: string
   rating: number
   text: string
+  /** Quick tags chosen on the rate screen, e.g. "Fast charging". */
+  tags?: string[]
   createdAt: string
 }
 

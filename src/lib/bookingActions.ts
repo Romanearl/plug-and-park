@@ -1,9 +1,10 @@
 // Booking actions: validate, then update the DB through updateDB (synced to every window).
 
 import { COMMISSION_RATE } from '../data/seed'
-import type { Booking, BookingStatus } from '../data/types'
+import type { Booking, BookingStatus, Review } from '../data/types'
 import { canTransition, checkSlot, hasConflict, type SlotCheck } from './booking'
 import { priceFor } from './pricing'
+import { nextRating, sessionState } from './session'
 import { getDB, updateDB } from './store'
 import { id } from './util'
 
@@ -77,4 +78,70 @@ export function declineBooking(bookingId: string, reason: string): ActionResult 
   if (!b) return { ok: false, reason: 'Booking not found' }
   if (b.status !== 'pending') return { ok: false, reason: `Can't decline a ${b.status} booking` }
   return setStatus(bookingId, 'declined', { declineReason: reason })
+}
+
+// ── S5: pay → start → complete → review ─────────────────────────────────────
+
+/** After the gateway said yes. Stores ONLY the last 4 digits of the card. */
+export function payBooking(bookingId: string, driverId: string, last4: string): ActionResult {
+  const db = getDB()
+  const b = db.bookings.find((x) => x.id === bookingId)
+  if (!b || b.driverId !== driverId) return { ok: false, reason: 'Booking not found' }
+  if (b.status !== 'confirmed') return { ok: false, reason: 'Only approved bookings can be paid' }
+  const spot = db.spots.find((s) => s.id === b.spotId)
+  const pin = spot?.accessPin ?? '0000'
+  return setStatus(bookingId, 'paid', {
+    paymentLast4: last4.replace(/\D/g, '').slice(-4),
+    pin,
+    qrPayload: `PLUGPARK|${b.id}|${pin}`,
+    paidAt: new Date().toISOString(),
+  })
+}
+
+/** "I've arrived — start charging". Can't be started twice. */
+export function startSession(bookingId: string, driverId: string): ActionResult {
+  const b = getDB().bookings.find((x) => x.id === bookingId)
+  if (!b || b.driverId !== driverId) return { ok: false, reason: 'Booking not found' }
+  if (b.status !== 'paid') return { ok: false, reason: b.status === 'active' ? 'This session has already started' : 'Pay before you start charging' }
+  return setStatus(bookingId, 'active', { startedAt: new Date().toISOString() })
+}
+
+/** Ends the session (at the end of the demo time, on Stop, or via "Skip charging to the end"). */
+export function completeSession(bookingId: string, opts: { skipToEnd?: boolean } = {}): ActionResult {
+  const db = getDB()
+  const b = db.bookings.find((x) => x.id === bookingId)
+  if (!b) return { ok: false, reason: 'Booking not found' }
+  if (b.status !== 'active') return { ok: false, reason: 'No active session' }
+  const spot = db.spots.find((s) => s.id === b.spotId)
+  const st = spot ? sessionState(b, spot) : null
+  const energyKwh = opts.skipToEnd ? (st?.totalKwh ?? 0) : (st?.energyKwh ?? 0)
+  return setStatus(bookingId, 'completed', { energyKwh, completedAt: new Date().toISOString() })
+}
+
+export const REVIEW_TAGS = ['Easy to find', 'Fast charging', 'Clean bay', 'Helpful owner', 'Good value'] as const
+
+export function submitReview(input: { bookingId: string; driverId: string; rating: number; tags: string[]; text: string }): { ok: true; review: Review } | { ok: false; reason: string } {
+  const db = getDB()
+  const b = db.bookings.find((x) => x.id === input.bookingId)
+  if (!b || b.driverId !== input.driverId) return { ok: false, reason: 'Booking not found' }
+  if (b.status !== 'completed') return { ok: false, reason: 'You can rate after your session' }
+  if (b.reviewed) return { ok: false, reason: 'Already reviewed' }
+  if (input.rating < 1 || input.rating > 5) return { ok: false, reason: 'Choose a star rating' }
+  const review: Review = {
+    id: id('rv'),
+    bookingId: b.id,
+    spotId: b.spotId,
+    driverId: b.driverId,
+    rating: input.rating,
+    text: input.text.trim().slice(0, 300),
+    tags: input.tags,
+    createdAt: new Date().toISOString(),
+  }
+  updateDB((d) => ({
+    ...d,
+    reviews: [review, ...d.reviews],
+    bookings: d.bookings.map((x) => (x.id === b.id ? { ...x, reviewed: true, updatedAt: review.createdAt } : x)),
+    spots: d.spots.map((sp) => (sp.id === b.spotId ? { ...sp, ...nextRating(sp.rating, sp.reviewsCount, input.rating) } : sp)),
+  }))
+  return { ok: true, review }
 }

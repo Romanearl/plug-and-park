@@ -1,14 +1,13 @@
 # Plug & Park — Build plan (S1–S11)
 
 **Presentation:** Fri 20 Nov 2026 (Group 2 is in the first batch). **Feature freeze:** Sun 15 Nov, end of day.
-**Workflow per session:**
-1. Roman gives Claude Code the session's task file.
-2. Claude Code builds it, runs typecheck and build, takes screenshots into `Claude outputs1/screenshots/S<n>/`, writes `Claude outputs1/S<n>_REPORT.md`, then stops.
-3. Roman brings the report and screenshots to the reviewer (Claude in Cowork).
-4. The reviewer checks them against the proposal, flow diagrams and grading guidelines, then writes the next task file (`S<n+1>_TASK.md`) with any fixes first.
-5. Roman says "yes", and Claude Code commits and pushes. GitHub Pages redeploys.
 
-Sessions are roughly 1.5–3 h of Claude Code time. If a session overruns, its unfinished items move to the top of the next task file; nothing gets dropped silently.
+**How the work runs (changed 11 Nov): unattended.** Claude Code works through the sessions in order by itself, commits and pushes as it goes, and continues until the usage limit stops it. When Roman restarts it after the limit resets, it picks up from `PROGRESS.md`. The full loop is in `CLAUDE.md` §2.
+
+- **Each session has its own task file:** `S1_TASK.md` (S1 + S2), then `S3_TASK.md` … `S10_TASK.md`. The table below is only the summary.
+- **Review happens in parallel, not as a gate.** Whenever Roman brings a report to the reviewer (Claude in Cowork), the reviewer checks it and the screenshots against the proposal, flow diagrams and grading guidelines, and writes any fixes into `REVIEW_FIXES.md`. Claude Code does open fixes first at the start of its next run.
+- **The dates below are the latest acceptable dates, not a schedule to wait for.** If a session finishes early, the next one starts straight away.
+- **The work ends at S10.** After that, Claude Code only handles `REVIEW_FIXES.md` items. S11 is for people: rehearsal, real-phone checks and the presentation.
 
 ## Timeline
 
@@ -23,8 +22,8 @@ Sessions are roughly 1.5–3 h of Claude Code time. If a session overruns, its u
 | **S7** | Sat 14 | **Onboarding + branches** | The owner application form (diagram 3) collects spot info, address, district, charger type, price and photo placeholders, ending in "Under review". A demo button approves it (the platform step), then the spot appears on the map. All No branches can be triggered from the demo sheet. Empty, error and loading states are everywhere. |
 | **S8** | Sat 14 | **Visual polish** | Consistent spacing, type and motion. Real or free-licence photos are in `public/photos` with credits. Tested on Roman's real phone (iOS Safari and/or Android Chrome). Contrast and tap targets are checked. Optionally an install-to-home-screen manifest. |
 | **S9** | Sun 15 | **Hardening — FEATURE FREEZE** | A Playwright **smoke test** runs the full happy path (register, OTP, map, details, request, approve, pay, QR, charge, rate) and passes. If tiles fail, the map falls back to the list. Reset demo is reliable. No console errors. Deep-link refresh works on GitHub Pages. |
-| **S10** | Mon 16 – Tue 17 | **Demo kit** | `DEMO_SCRIPT.md` (4–5 min click path with talking points) is written. Screenshots are ready for the slides and the report. The **backup video** (screen recording of the full flow in the presenter view) is recorded. `HOW_IT_WORKS.md`, a one-page plain-language explainer for teammates and the report, is written. A QR code to the live URL is ready for a slide. |
-| **S11** | Wed 18 – Thu 19 | **Buffer** | Bug fixes only, team rehearsal on the classroom setup (projector at 1280×720), and a final check of the live URL. |
+| **S10** | Mon 16 – Tue 17 | **Demo kit** | In `Claude outputs1/demo-kit/`: `DEMO_SCRIPT.md` (4–5 min click path with talking points, plus a 2-minute version) is written. The **backup video** is recorded automatically with Playwright in the presenter view. Screenshot sets for the slides and the report are ready (plain, framed, and one flow image per diagram). `HOW_IT_WORKS.md`, a one-page plain-language explainer for teammates and Q&A, is written. The README is final, with the live link and a QR code. `FINAL_REPORT.md` is written. **Claude Code stops here.** |
+| **S11** | Wed 18 – Thu 19 | **Buffer (people, not Claude Code)** | Roman tests on real phones and the classroom projector (1280×720). The team rehearses with the demo script. Real photos and team names are added. Only bug fixes go in, through `REVIEW_FIXES.md`. |
 | — | **Fri 20** | **Present** | |
 
 ### If we fall behind: cut in this order

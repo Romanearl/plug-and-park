@@ -1,30 +1,28 @@
-# Handoff — S1 not started yet (environment setup only)          Date: Wed 11 Nov 2026
+# Handoff — S1 + S2 done and pushed; Pages setup pending          Date: Wed 11 Nov 2026
 
 ## For the next Claude Code session — start here
-1. Read `Claude outputs1/CLAUDE.md`, `Claude outputs1/PLAN.md` and `Claude outputs1/S1_TASK.md` as usual.
-2. Read this file, then check the "Still open" items below with Roman **before** writing any code.
-3. When they're resolved, do S1_TASK.md: Part A first, then Part B (S2) only if every Part A check passes. Follow the session protocol and stop when the report is written.
+1. Read `Claude outputs1/CLAUDE.md`, `PLAN.md`, and `S1_REPORT.md` (covers S1 + S2).
+2. Read this file. Then do the "Next steps" below in order.
+3. **Standing instruction from Roman (11 Nov):** in this project, commit and push **without asking**, and after a session is finished and verified, go straight on to the next session in PLAN.md. This overrides CLAUDE.md §2 rule 1 and the "stop after report" step. Still ask before destructive git commands. (Also saved in Claude Code memory.)
 
 ## Status
-- **No project work has been done yet.** There's no git init, no scaffold and no files outside `Claude outputs1/`.
-- The previous session only checked the machine and installed tools.
+- **S1 (foundation) and S2 (auth) are complete.** typecheck + build pass; 19 screenshots in `screenshots/S1` and `S2`; checks pass (`scripts/checks/s1.mjs` 18/18, `s2.mjs` 62/62).
+- One commit `1607599 S1 + S2: foundation and auth` on `main`, **pushed** to https://github.com/Romanearl/plug-and-park (public).
+- `gh` is logged in as **Romanearl**, token scopes include `repo` and `workflow`.
+- The first "Deploy to GitHub Pages" Actions run (id 43012034515) started on push. **It will likely fail at configure-pages/deploy** because Pages isn't enabled yet.
 
-## Environment (checked 11 Nov)
-| Item | State |
-|---|---|
-| Git | 2.56.0, global user `Roman` (email set) |
-| Node.js | **Upgraded from v16.19.1 to v26.13.0 LTS** via winget (Vite and Playwright needed ≥ 20). Verify with `node --version` after the restart; if it still shows v16, the PATH hasn't refreshed. |
-| npm | Was 8.19.3 with Node 16; should now be the one bundled with Node 26 |
-| GitHub CLI (`gh`) | **Installed** (v2.103.3) via winget. **Not logged in yet.** |
-| winget tip | Always add `--source winget --accept-source-agreements --accept-package-agreements`. Otherwise the msstore terms prompt fails in the non-interactive shell. |
+## Next steps
+1. **Enable Pages (source = GitHub Actions).** Roman earlier said "do pages setup yourself", but when Claude ran
+   `gh api -X POST repos/Romanearl/plug-and-park/pages -f build_type=workflow`
+   Roman declined that action at that moment. **Ask Roman first** whether to run it, or whether he'll do it in GitHub → Settings → Pages → Source: GitHub Actions.
+2. Then re-run the deploy: `gh run rerun <id> --failed` or `gh workflow run "Deploy to GitHub Pages"`. Check it's green with `gh run list`/`gh run watch`.
+3. Check https://romanearl.github.io/plug-and-park/ loads, including a hard refresh on `#/owner`.
+4. Start **S3 — Discovery** (there's no `S3_TASK.md`; work from the PLAN.md S3 row + CLAUDE.md): Leaflet + react-leaflet with Carto Positron tiles, 12 custom price pins (selected = blue), district + charger-type filter chips, list view toggle, peek bottom sheet on pin tap, spot details (SVG photo carousel, price, rating + reviews, charger type/kW, amenities, availability, owner, "Request booking" CTA). **Verify pin taps/drags inside the scaled frame** (CLAUDE.md §7: switch to CSS `zoom` if `transform` breaks Leaflet). Add S3 scenarios to `scripts/screenshots.mjs`, write `S3_REPORT.md`, commit + push.
 
-## Still open (ask Roman first)
-1. **Restart Claude Code** so the new Node and `gh` are on PATH. Done if `node --version` shows v26 and `gh --version` works.
-2. **GitHub login:** Roman runs `! gh auth login` (GitHub.com → HTTPS → Login with a web browser). Check with `gh auth status`.
-3. **GitHub username** is unknown. It's needed for the README live-demo URL `https://<username>.github.io/plug-and-park/`. If Roman is logged in, `gh api user --jq .login` returns it.
-4. **Repo timing:** create the public repo `plug-and-park` now (empty, no push) or only after the session, when Roman says "yes" to the first push? The default is to **wait**, per CLAUDE.md §2 and S1_TASK A7.
-5. After the first push, Pages must be set to Settings → Pages → Source: **GitHub Actions**. Roman does this, or Claude does it via `gh api` with his OK.
-
-## Notes for the S1 report
-- **Unexpected item in the repo root:** an empty folder `repo/`. It must be left alone (S1_TASK A0); list it in the report.
-- Deploy workflow: local Node is 26, but the workflow pins `node-version: 22` (S1_TASK A7). Consider 24 or 26 to match local, and note it under Deviations if changed. Check the action versions are current, as A7 asks.
+## Useful notes
+- Run checks: `npm run preview` in one terminal, then `node scripts/checks/s1.mjs` / `s2.mjs`.
+- `npm run shots -- S3` shoots one session; `npm run shots -- all` re-shoots everything.
+- Playwright treats `aria-disabled` buttons as not clickable → use `click({ force: true })` on the Register "Continue" button in scripts.
+- PowerShell `Get-Content`/`Set-Content` mangle UTF-8 (em dashes, ×, →). Use the Edit tool or Bash for files with non-ASCII text. Use Bash heredocs for multi-line commit messages.
+- Stack versions: Node 26.13, npm 11.20, React 19.3, Vite 8.3, TypeScript 7.0 (native tsc), Playwright 1.65.
+- The empty `repo/` folder in the root must be left alone.

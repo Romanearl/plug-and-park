@@ -1,12 +1,12 @@
 # Plug & Park — CLAUDE.md
 
-Read this file at the start of every session. Then read `Claude outputs1/PLAN.md` and the current `Claude outputs1/S*_TASK.md`.
+Read this file at the start of every run. Then follow the **autonomous run protocol** in §2.
 
 > **Where things live.** The repo root is `C:\Users\kotya\Documents\PlugAndPark`. The folder **`Claude outputs1/`** inside it is the hand-off folder shared with the reviewer:
-> - The reviewer writes `CLAUDE.md` (the **master copy**), `PLAN.md` and `S<n>_TASK.md` there.
-> - You write `S<n>_REPORT.md` and `screenshots/S<n>/` there.
+> - The reviewer writes `CLAUDE.md` (the **master copy**), `PLAN.md`, `S<n>_TASK.md` and `REVIEW_FIXES.md` there.
+> - You write `PROGRESS.md`, `S<n>_REPORT.md`, `screenshots/S<n>/`, and (only when needed) `BLOCKED.md` and `FINAL_REPORT.md` there.
 >
-> At the start of every session, if `Claude outputs1/CLAUDE.md` differs from the repo-root `CLAUDE.md`, copy the master over the root copy and mention it in the report. Never edit `PLAN.md`, the task files or the master `CLAUDE.md` yourself; propose changes in your report instead.
+> At the start of every run, if `Claude outputs1/CLAUDE.md` differs from the repo-root `CLAUDE.md`, copy the master over the root copy and mention it in the report. Never edit `PLAN.md`, the task files, `REVIEW_FIXES.md` or the master `CLAUDE.md` yourself; propose changes in your report instead.
 >
 > The folder name contains a space, so always quote it in shell commands and use `path.join` in scripts.
 
@@ -22,17 +22,63 @@ Source documents (not in the repo): the proposal (one page), three swim-lane flo
 
 ## 2. Hard rules — always follow
 
-### Git
-1. **Never `git commit` or `git push` without Roman's explicit "yes" in the chat for that specific commit or push.** Prepare the commit (stage the files and propose a message), then ask.
-2. **No destructive git commands without asking first**, including `reset`, `restore`, `stash`, `checkout -- <file>`, `clean`, `rebase`, `branch -D`, `push --force` and amending pushed commits. Explain what would be lost, then wait.
-3. These are fine without asking: `git status`, `git diff`, `git log`, `git add`, and `git init` (first session only).
+### Git (Roman's standing permission, given 11 Nov 2026)
+1. **Commit and push to `main` without asking.** This applies only to this project's own repo, `plug-and-park`.
+2. **Commit small and often, and push after every commit.** Commit after each task-file section that passes typecheck + build, with the message `S<n>: <what changed>`. Your run can be cut off by the usage limit at any moment, so anything uncommitted is at risk and anything unpushed isn't on the live site.
+3. **Never push a broken build.** Run `npm run typecheck` and `npm run build` before each commit.
+4. **Destructive git commands are still forbidden without Roman's explicit OK**: `reset`, `restore`, `stash`, `checkout -- <file>`, `clean`, `rebase`, `branch -D`, `push --force`, amending pushed commits. In an unattended run, that means: don't use them. To undo something, edit the files or use `git revert <hash>` (a new commit).
+5. Never commit `node_modules`, `dist` or anything secret. Don't change the git config, the remote, the repo's visibility or any other repository.
 
-### Session protocol
-Every session ends with these steps, **then you stop** and don't start the next session's work:
-1. `npm run typecheck` and `npm run build` both pass with no errors.
-2. `npm run shots -- S<n>` takes **phone-size screenshots (390×844 viewport)** with Playwright of **every screen and state that is new or changed** in this session, plus one 1440×900 shot of the landing page inside the phone frame. They go into **`Claude outputs1/screenshots/S<n>/`**.
-3. Write **`Claude outputs1/S<n>_REPORT.md`** using the template in §10.
-4. Stop. Tell Roman the report is ready, and ask whether to commit and push.
+### Autonomous run protocol
+Roman runs you **unattended**: you work until the usage limit stops you, and he restarts you when it resets. Nobody is watching in between, so every run follows the same loop, and all state lives in files and git, never only in the conversation.
+
+**Start of every run (including after a limit reset):**
+1. Read this file (sync the root copy from the master), `PLAN.md`, `PROGRESS.md` and `REVIEW_FIXES.md` in `Claude outputs1/`.
+2. Run `git status` and `git log --oneline -8`. If there is uncommitted work from an interrupted run, inspect it, finish it and commit it. Never discard it.
+3. Do every open item in `REVIEW_FIXES.md` first. An item is open if its ID isn't listed under "Review fixes done" in `PROGRESS.md`.
+4. Continue at the first session in `PROGRESS.md` that isn't marked done.
+
+**Loop for each session S<n>:**
+1. Read `Claude outputs1/S<n>_TASK.md`. If the session was built before its task file existed, do a **gap pass**: check the code against every item and "done when" line, and build what's missing.
+2. Build section by section. After each section: typecheck, build, commit, push, and update `PROGRESS.md`.
+3. Add `scripts/checks/s<n>.mjs` with Playwright checks for every "done when" item. `npm run check` (all sessions' checks) must pass. **Never delete or weaken an earlier check to make it pass**; fix the regression instead.
+4. Run `npm run shots -- S<n>`: phone-size screenshots (**390×844 viewport**) of every new or changed screen and state, into `Claude outputs1/screenshots/S<n>/`.
+5. **Self-review the screenshots.** Open each new PNG and look at it. Fix and re-shoot if you see any of these:
+   - clipped or overflowing text, or horizontal scroll
+   - content hidden under the status bar, demo banner, tab bar or home indicator
+   - elements off the 20px gutters or misaligned with their neighbours
+   - text that fails contrast (white on `--blue` is not allowed)
+   - a screen that looks empty or unfinished, or an unstyled default browser control
+   - anything that doesn't look like the same app as the earlier screens
+6. Write `Claude outputs1/S<n>_REPORT.md` (template in §10), mark the session done in `PROGRESS.md`, commit and push.
+7. Check the deploy: the GitHub Actions run is green and the live URL loads (§9). If it's red, fix that before anything else.
+8. **Go straight to the next session.** Don't wait for Roman or the reviewer.
+
+**Decisions.** Don't stop to ask questions. Choose the option that best serves a smooth 5-minute live demo and matches the flow diagrams (`PLAN.md`), then log it under "Decisions made" in the report.
+
+**Stuck rule.** If one item still fails after 3 real attempts, stop working on it: back out the partial work by editing files (not with git reset), log it in `PROGRESS.md` as skipped with what you tried, and move on. If time is short, follow the cut order in `PLAN.md`.
+
+**Stop conditions.**
+- **S10 is done.** Write `Claude outputs1/FINAL_REPORT.md` and stop. **Don't invent new features, refactors or "improvements" to use up remaining usage.** From then on, a run only handles open `REVIEW_FIXES.md` items; if there are none, say so and stop.
+- **Feature freeze after S9.** S10 is the demo kit only: docs, screenshots, video. After S9, the only code changes allowed are bug fixes.
+- **A hard blocker only Roman can clear** (GitHub login missing, a permission prompt, a need for destructive git, anything involving money or credentials). Write `Claude outputs1/BLOCKED.md` saying exactly what you need, continue with any work that isn't blocked, and stop if there is none.
+
+**`Claude outputs1/PROGRESS.md`** is your memory between runs. Create it if it's missing and keep it current during the session, not only at the end:
+
+```markdown
+# Progress            Last updated: <date time>
+Live URL: https://<user>.github.io/plug-and-park/      Last green deploy: <commit>
+
+## Sessions
+- [x] S1 Foundation — done <date>, commit <hash>
+- [ ] S3 Discovery — IN PROGRESS: sections 1–3 done, working on 4 (spot details)
+
+## Review fixes done
+- RF-1 (<hash>)
+
+## Skipped / needs a human
+- <item> — what was tried, why skipped
+```
 
 ### Scope
 - **Phone only.** Design every screen for a 390×844 phone. **No desktop or tablet layouts, ever.** On wider windows the app renders inside a centred phone frame (§7).
@@ -40,7 +86,8 @@ Every session ends with these steps, **then you stop** and don't start the next 
 - **No backend and no API keys.** All data lives in the browser (`localStorage`). The only network use is Google Fonts and map tiles.
 - **No copyrighted images.** Don't hot-link photos from the web. Until S8, spot photos are generated SVG illustrations; in S8 real photos go in `public/photos/` with credits in the README.
 - **Don't copy brand logos.** The visual style is *inspired by* Uber's layout and the 1999–2020 Goldman Sachs blue. Never use their logos, names, wordmarks or fonts.
-- Stay inside the current task file. If something is unclear or you think the plan is wrong, **ask instead of guessing**, and list it under "Questions" in the report.
+- Stay inside the task files. If something is unclear, decide (see "Decisions" above) and log it. If you think the plan itself is wrong, say so in the report, but build what the task file says.
+- **Quality over speed.** There's no bonus for finishing early. A smaller app where every screen works and looks finished beats a bigger one with rough edges.
 
 ## 3. Stack
 
@@ -55,6 +102,8 @@ Every session ends with these steps, **then you stop** and don't start the next 
 | Screenshots / smoke tests | Playwright (dev dependency) |
 | Hosting | GitHub Pages via GitHub Actions; public repo `plug-and-park` |
 
+**Versions:** keep the current stable versions already installed (React 19, Vite 8, TypeScript 7, Node 26, Playwright). Don't downgrade, and don't upgrade a major version mid-project.
+
 **Developer machine: Windows.** Keep every npm script cross-platform. Use Node scripts, not bash: no `rm -rf`, `&&` chains that assume bash, or `export VAR=`. Use a `.gitattributes` with `* text=auto eol=lf`.
 
 ## 4. Commands
@@ -67,6 +116,8 @@ npm run typecheck           # tsc --noEmit
 npm run build               # production build → dist/
 npm run preview             # serve dist/ locally (http://localhost:4173/plug-and-park/)
 npm run shots -- S1         # build + preview + Playwright screenshots → "Claude outputs1/screenshots/S1/"
+npm run check               # build + preview + run every scripts/checks/s*.mjs (add this script in S3)
+npm run smoke               # full happy-path test (S9)
 ```
 
 ## 5. Folder structure
@@ -76,14 +127,15 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
 ├─ CLAUDE.md                      # copy of Claude outputs1/CLAUDE.md
 ├─ README.md
 ├─ Claude outputs1/               # hand-off folder with the reviewer
-│  ├─ CLAUDE.md  PLAN.md  S<n>_TASK.md      # written by the reviewer (read-only for you)
-│  ├─ S<n>_REPORT.md                        # written by you at the end of each session
+│  ├─ CLAUDE.md  PLAN.md  S<n>_TASK.md  REVIEW_FIXES.md   # written by the reviewer (read-only for you)
+│  ├─ PROGRESS.md  S<n>_REPORT.md           # written by you
 │  └─ screenshots/S<n>/NN-name.png          # written by scripts/screenshots.mjs
 ├─ index.html                     # loads Inter + Libre Caslon Text from Google Fonts
 ├─ vite.config.ts                 # base: '/plug-and-park/'
 ├─ .github/workflows/deploy.yml   # GitHub Pages deploy
 ├─ public/                        # favicon.svg, photos/ (S8)
 ├─ scripts/screenshots.mjs        # Playwright screenshot runner (§10)
+├─ scripts/checks/s<n>.mjs        # Playwright checks, one file per session
 └─ src/
    ├─ main.tsx  App.tsx           # App = PhoneFrame + DemoBanner + Router
    ├─ styles/app.css              # tokens + component classes (the only stylesheet)
@@ -197,8 +249,8 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
 
 - Public repo named **`plug-and-park`**, so the live URL is `https://<github-user>.github.io/plug-and-park/`. `vite.config.ts` must have `base: '/plug-and-park/'`.
 - `.github/workflows/deploy.yml` builds on every push to `main` and deploys with `actions/upload-pages-artifact` + `actions/deploy-pages`. It runs `npm ci`, so **commit `package-lock.json`**.
-- One-time setup by Roman: GitHub → repo → Settings → Pages → Source: **GitHub Actions**.
-- Pushing needs Roman's "yes" (§2). After a push, check the Actions run is green and the live URL loads, including a hard refresh on a deep link like `#/app`.
+- **First push (if the repo doesn't exist yet):** check `gh auth status`. If logged in, create the repo with `gh repo create plug-and-park --public --source . --remote origin --push`, then enable Pages with GitHub Actions as the source (`gh api -X POST repos/{owner}/plug-and-park/pages -f build_type=workflow`). Put the real live URL in `README.md` and `PROGRESS.md`. If `gh` isn't logged in, that's a hard blocker: write `BLOCKED.md` and keep working locally with commits but no push.
+- After every push, check the Actions run is green (`gh run list --limit 1`) and the live URL loads, including a hard refresh on a deep link like `#/app`.
 
 ## 10. Screenshots & session report
 
@@ -223,7 +275,8 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
 - <what you did differently and why>
 
 ## Checks
-- typecheck: pass/fail · build: pass/fail · shots: N screenshots, errors: none/list
+- typecheck: pass/fail · build: pass/fail · check: N/N pass · shots: N screenshots, errors: none/list
+- Screenshot self-review: done, <what you fixed>
 
 ## Screenshots (in Claude outputs1/screenshots/S<n>/)
 | File | Shows |
@@ -232,10 +285,13 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
 
 ## Known bugs / risks
 
-## Questions for Roman / the reviewer
+## Decisions made
+- <choice> — why
 
-## Proposed commit
-- Message: "S<n>: <summary>"
-- Files: <list or "all changes">
-(Waiting for "yes" before committing/pushing.)
+## Needs a human (Roman or the reviewer)
+- <things you couldn't verify yourself, e.g. a real-phone test>
+
+## Commits & deploy
+- Commits: <hash> "<message>", …
+- Pushed: yes/no · Actions run: green/red · Live URL checked: yes/no
 ```

@@ -17,7 +17,7 @@ export function requestPayout(ownerId: string, method: Payout['method'], destina
   updateDB((d) => ({
     ...d,
     payouts: [payout, ...d.payouts],
-    users: d.users.map((u) => (u.id === ownerId ? { ...u, payoutMethod: destination } : u)),
+    users: d.users.map((u) => (u.id === ownerId ? { ...u, payoutMethod: { type: method, label: destination } } : u)),
   }))
   return { ok: true, value: payout }
 }

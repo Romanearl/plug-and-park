@@ -256,7 +256,7 @@ export default function MapHome() {
                 <Icon name="map" size={20} />
               </span>
               <span style={{ flex: 1, fontWeight: 600 }}>All districts</span>
-              <span className="caption">{db.spots.filter((s) => s.active).length}</span>
+              <span className="caption">{db.spots.filter((s) => s.active && s.reviewStatus === 'approved').length}</span>
               {!filters.district && <Icon name="check" size={20} />}
             </button>
           </li>

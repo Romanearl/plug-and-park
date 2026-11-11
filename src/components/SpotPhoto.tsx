@@ -212,11 +212,15 @@ export function SpotPhoto({
   className,
   rounded = 0,
 }: {
-  spot: Pick<Spot, 'id' | 'propertyType' | 'photoSeed' | 'title'>
+  spot: Pick<Spot, 'id' | 'propertyType' | 'photoSeed' | 'title'> & { photos?: string[] }
   index?: number
   className?: string
   rounded?: number
 }) {
+  const uploaded = spot.photos?.[index]
+  if (uploaded && uploaded.startsWith('data:image/')) {
+    return <img className={className} src={uploaded} alt={`Photo ${index + 1} of ${spot.title}`} style={{ objectFit: 'cover', borderRadius: rounded || undefined }} />
+  }
   const scene = sceneFor(spot)
   const v = (index + spot.photoSeed) % 3
   const car = CAR_COLOURS[(spot.photoSeed + index) % CAR_COLOURS.length]

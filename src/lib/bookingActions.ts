@@ -26,7 +26,7 @@ export function requestBooking(input: {
   minutes: number
 }): ActionResult | { ok: false; reason: SlotCheck } {
   const db = getDB()
-  const spot = db.spots.find((s) => s.id === input.spotId && s.active)
+  const spot = db.spots.find((s) => s.id === input.spotId && s.active && s.reviewStatus === 'approved')
   if (!spot) return { ok: false, reason: 'Charger not found' }
   const check = checkSlot(spot, input.start, input.minutes, db.bookings)
   if (check !== 'ok') return { ok: false, reason: check }

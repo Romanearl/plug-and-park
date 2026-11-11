@@ -14,7 +14,7 @@ import { cx, fmtDate, hkd, shortName } from '../../lib/util'
 
 export function SpotDetails({ id }: { id: string }) {
   const db = useDB()
-  const spot = db.spots.find((s) => s.id === id && s.active)
+  const spot = db.spots.find((s) => s.id === id && s.active && s.reviewStatus === 'approved')
   const [bookingOpen, setBookingOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const reviewsRef = useRef<HTMLElement>(null)

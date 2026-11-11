@@ -19,7 +19,7 @@ export function Account() {
       ? [
           { icon: 'plug' as IconName, label: 'Spots', value: `${db.spots.filter((s) => s.ownerId === user.id).length} listed` },
           { icon: 'wallet' as IconName, label: 'Lifetime earnings (net)', value: hk2(ownerBalance(user.id, db).lifetimeNet) },
-          { icon: 'card' as IconName, label: 'Payout method', value: user.payoutMethod ?? 'Not set — add one when you withdraw' },
+          { icon: 'card' as IconName, label: 'Payout method', value: user.payoutMethod?.label ?? 'Not set — add one when you withdraw' },
         ]
       : []),
   ]

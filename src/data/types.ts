@@ -30,8 +30,8 @@ export interface User {
   rating: number
   ratingCount: number
   vehicle?: string
-  /** Owners: masked payout method on file, e.g. "FPS •••• 9876". */
-  payoutMethod?: string
+  /** Owners: payout method on file — masked label only, e.g. { type: 'FPS', label: 'FPS •••• 9876' }. */
+  payoutMethod?: { type: 'FPS' | 'Bank transfer'; label: string }
   createdAt: string
 }
 
@@ -67,6 +67,11 @@ export interface Spot {
   accessPin: string
   instructions: string
   active: boolean
+  /** Platform review (diagram 3 "Approve application?"). Only approved + active spots are on the map. */
+  reviewStatus: 'approved' | 'in_review' | 'changes_requested'
+  reviewNote?: string
+  /** Owner-uploaded photos (compressed JPEG data URLs) or 'sample' for a generated illustration. */
+  photos?: string[]
 }
 
 export type BookingStatus =

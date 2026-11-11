@@ -12,7 +12,7 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: d5b
 - [x] S7 Onboarding + branches — done 11 Nov (S7_REPORT.md)
 - [x] S8 Visual polish — done 11 Nov (S8_REPORT.md)
 - [x] S9 Hardening — done 11 Nov (S9_REPORT.md) — FEATURE FREEZE, tag v1.0-freeze
-- [ ] S10 Demo kit
+- [x] S10 Demo kit — done 11 Nov (FINAL_REPORT.md, demo-kit/)
 
 ## Freeze
 - Tag: **v1.0-freeze** → commit d5bb4d7 (pushed)

@@ -173,6 +173,39 @@ export function BookingStatus({ id }: { id: string }) {
                 <h2 className="h2" style={{ marginTop: 14 }}>
                   {b.status === 'paid' ? 'Paid — you’re all set' : b.status === 'active' ? 'Charging now' : 'Session complete'}
                 </h2>
+                {b.status === 'paid' && (
+                  <button className="btn btn-primary block" style={{ marginTop: 18 }} onClick={() => navigate(`/app/confirm/${b.id}`)}>
+                    View access (QR + PIN)
+                  </button>
+                )}
+                {b.status === 'active' && (
+                  <button className="btn btn-primary block" style={{ marginTop: 18 }} onClick={() => navigate(`/app/session/${b.id}`)}>
+                    Resume session
+                  </button>
+                )}
+                {b.status === 'completed' && (
+                  <>
+                    <div className="receipt">
+                      <div>
+                        <span>Energy delivered</span>
+                        <span>{(b.energyKwh ?? 0).toFixed(1)} kWh</span>
+                      </div>
+                      <div>
+                        <span>Paid with card</span>
+                        <span>•••• {b.paymentLast4 ?? '----'}</span>
+                      </div>
+                      <div className="total">
+                        <span>Total</span>
+                        <span>{hkd(b.price)}</span>
+                      </div>
+                    </div>
+                    {!b.reviewed && (
+                      <button className="btn btn-primary block" style={{ marginTop: 18 }} onClick={() => navigate(`/app/rate/${b.id}`)}>
+                        Rate your experience
+                      </button>
+                    )}
+                  </>
+                )}
               </>
             )}
           </section>

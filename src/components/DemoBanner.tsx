@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { DEMO_ACCOUNTS, DEMO_CARDS, DEMO_OTP, DEMO_PASSWORD } from '../data/seed'
 import { navigate } from '../lib/router'
-import { resetDemo, signIn, useCurrentUser } from '../lib/store'
+import { completeSession } from '../lib/bookingActions'
+import { resetDemo, signIn, useCurrentUser, useDB } from '../lib/store'
 import { BottomSheet } from './BottomSheet'
 import { IN_IFRAME } from './PhoneFrame'
 import { Icon } from './Icon'
@@ -26,6 +27,8 @@ export function DemoBanner() {
 
 function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const user = useCurrentUser()
+  const db = useDB()
+  const active = user ? db.bookings.find((b) => b.driverId === user.id && b.status === 'active') : undefined
   const [confirmReset, setConfirmReset] = useState(false)
 
   useEffect(() => {
@@ -83,6 +86,18 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
       </div>
 
       <div className="stack" style={{ marginTop: 16, gap: 10 }}>
+        {active && (
+          <button
+            className="btn btn-accent block"
+            onClick={() => {
+              completeSession(active.id, { skipToEnd: true })
+              onClose()
+              navigate(`/app/session/${active.id}`, { replace: true })
+            }}
+          >
+            <Icon name="bolt" size={20} /> Skip charging to the end
+          </button>
+        )}
         <button className="btn btn-primary block" onClick={() => go(DEMO_ACCOUNTS.driver.userId, '/app')}>
           <Icon name="car" size={20} /> Sign in as driver
         </button>

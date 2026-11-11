@@ -12,6 +12,10 @@ import { Verify } from './screens/auth/Verify'
 import { ComingSoon } from './screens/ComingSoon'
 import { Account } from './screens/driver/Account'
 import { BookingStatus } from './screens/driver/BookingStatus'
+import { Confirmation } from './screens/driver/Confirmation'
+import { Payment } from './screens/driver/Payment'
+import { Rate } from './screens/driver/Rate'
+import { Session } from './screens/driver/Session'
 import { MyBookings } from './screens/driver/MyBookings'
 import { SpotDetails } from './screens/driver/SpotDetails'
 import { Landing } from './screens/Landing'
@@ -58,14 +62,10 @@ const routes: Route[] = [
   { path: '/app/account', render: () => <Shell role="driver"><Account /></Shell> },
   { path: '/app/spot/:id', render: ({ id }) => <Full role="driver"><SpotDetails key={id} id={id} /></Full> },
   { path: '/app/booking/:id', render: ({ id }) => <Full role="driver"><BookingStatus key={id} id={id} /></Full> },
-  {
-    path: '/app/pay/:id',
-    render: () => (
-      <Full role="driver">
-        <ComingSoon title="Payment" session="S5" checklist={['Card form with real checks (Luhn, expiry, CVC)', 'Test card 4242… succeeds, 4000…0002 declines', 'QR code + PIN after payment']} />
-      </Full>
-    ),
-  },
+  { path: '/app/pay/:id', render: ({ id }) => <Full role="driver"><Payment key={id} id={id} /></Full> },
+  { path: '/app/confirm/:id', render: ({ id }) => <Full role="driver"><Confirmation key={id} id={id} /></Full> },
+  { path: '/app/session/:id', render: ({ id }) => <Full role="driver"><Session key={id} id={id} /></Full> },
+  { path: '/app/rate/:id', render: ({ id }) => <Full role="driver"><Rate key={id} id={id} /></Full> },
 
   // Owner
   { path: '/owner', render: () => <Shell role="owner"><Requests /></Shell> },

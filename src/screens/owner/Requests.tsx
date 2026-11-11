@@ -38,7 +38,7 @@ export function Requests() {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   const waiting = mine.filter((b) => b.status === 'pending').length
   const upcoming = mine
-    .filter((b) => (b.status === 'confirmed' || b.status === 'paid') && !approved[b.id] && endOf(b).getTime() > Date.now())
+    .filter((b) => (b.status === 'active' || ((b.status === 'confirmed' || b.status === 'paid') && endOf(b).getTime() > Date.now())) && !approved[b.id])
     .sort((a, b) => a.start.localeCompare(b.start))
 
   const approve = (b: Booking) => {
@@ -121,9 +121,15 @@ export function Requests() {
                         {fmtDate(start)} · {hhmm(start)}–{hhmm(endOf(b))}
                       </div>
                     </div>
-                    <span className={cx('badge', b.status === 'paid' ? 'green' : 'amber')}>
-                      {b.status === 'paid' ? 'Paid' : 'Awaiting payment'}
-                    </span>
+                    {b.status === 'active' ? (
+                      <span className="badge green live-badge">
+                        <span className="live-dot" /> Charging now
+                      </span>
+                    ) : (
+                      <span className={cx('badge', b.status === 'paid' ? 'green' : 'amber')}>
+                        {b.status === 'paid' ? 'Paid' : 'Awaiting payment'}
+                      </span>
+                    )}
                   </li>
                 )
               })}

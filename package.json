@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p .",
     "shots": "node scripts/screenshots.mjs",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

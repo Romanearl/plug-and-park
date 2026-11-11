@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { DemoBanner } from './components/DemoBanner'
 import { Notifier } from './components/Notifier'
+import { StorageNotice } from './components/StorageNotice'
 import { PhoneFrame } from './components/PhoneFrame'
 import { RequireRole } from './components/RequireRole'
 import { TabBar } from './components/TabBar'
@@ -9,7 +10,7 @@ import { Router, usePath, type Route } from './lib/router'
 import { Login } from './screens/auth/Login'
 import { Register } from './screens/auth/Register'
 import { Verify } from './screens/auth/Verify'
-import { ComingSoon } from './screens/ComingSoon'
+import { NotFound } from './screens/NotFound'
 import { Account } from './screens/driver/Account'
 import { BookingStatus } from './screens/driver/BookingStatus'
 import { Confirmation } from './screens/driver/Confirmation'
@@ -104,7 +105,8 @@ export function App() {
   if (path === '/presenter') return <Presenter />
   return (
     <PhoneFrame banner={<DemoBanner />}>
-      <Router routes={routes} fallback={() => <ComingSoon title="Page not found" checklist={[]} />} />
+      <Router routes={routes} fallback={() => <NotFound />} />
+      <StorageNotice />
       <Notifier />
     </PhoneFrame>
   )

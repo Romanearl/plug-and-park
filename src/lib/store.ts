@@ -18,11 +18,22 @@ type Listener = () => void
 const listeners = new Set<Listener>()
 const emit = () => listeners.forEach((l) => l())
 
+// Set when the browser blocks storage or it's full: the demo keeps running in memory.
+let storageBroken = false
+const markBroken = () => {
+  if (!storageBroken) {
+    storageBroken = true
+    queueMicrotask(emit)
+  }
+}
+export const useStorageBroken = () => useSyncExternalStore(subscribe, () => storageBroken)
+
 function storageOf(kind: 'local' | 'session'): Storage | null {
   try {
     return kind === 'local' ? window.localStorage : window.sessionStorage
   } catch {
-    return null // access itself can throw when storage is blocked
+    markBroken() // access itself can throw when storage is blocked
+    return null
   }
 }
 
@@ -40,7 +51,7 @@ function safeSet(kind: 'local' | 'session', key: string, value: string | null) {
     if (value === null) s.removeItem(key)
     else s.setItem(key, value)
   } catch {
-    /* private mode / blocked storage — the demo still works in memory */
+    markBroken() // private mode / blocked or full storage — the demo still works in memory
   }
 }
 

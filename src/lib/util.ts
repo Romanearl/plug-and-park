@@ -34,3 +34,14 @@ export function dayAt(days: number, hhmm: string): string {
 export function cx(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(' ')
 }
+
+/** en-GB short date, e.g. "Thu 12 Nov". */
+export function fmtDate(d: Date | string): string {
+  return new Date(d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '')
+}
+
+/** Privacy-friendly short name for reviews: "Sarah Ng" → "Sarah N." */
+export function shortName(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  return parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0]}.` : parts[0]
+}

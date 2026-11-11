@@ -168,6 +168,139 @@ const scenarios = [
   },
 ]
 
+// ── S3: discovery ──
+const asDriver = (context) =>
+  context.addInitScript(() => {
+    if (!sessionStorage.getItem('pp.session.main')) sessionStorage.setItem('pp.session.main', 'u_driver_demo')
+  })
+const blockTiles = (context) => context.route(/tile\.openstreetmap\.org|basemaps\.cartocdn\.com/, (route) => route.abort())
+
+async function waitForMap(page) {
+  await page.locator('.pin').first().waitFor()
+  await page
+    .waitForFunction(() => document.querySelectorAll('.leaflet-tile-loaded').length >= 6, null, { timeout: 15000 })
+    .catch(() => console.warn('  ! map tiles did not load (offline?)'))
+  await page.waitForTimeout(500)
+}
+const tapPin = (page, id) => page.locator(`.pin[data-spot="${id}"]`).click()
+const chip = (page, name) => page.getByRole('toolbar', { name: 'Filters' }).getByRole('button', { name, exact: true }).click()
+
+scenarios.push(
+  { session: 'S3', file: '01-map-all-pins', route: '#/app', init: asDriver, setup: waitForMap },
+  {
+    session: 'S3',
+    file: '02-map-ccs2-filter',
+    route: '#/app',
+    init: asDriver,
+    setup: async (page) => {
+      await waitForMap(page)
+      await chip(page, 'CCS2')
+    },
+  },
+  {
+    session: 'S3',
+    file: '03-district-sheet',
+    route: '#/app',
+    init: asDriver,
+    setup: async (page) => {
+      await waitForMap(page)
+      await page.getByRole('button', { name: /Where do you need to charge/ }).click()
+      await page.getByRole('dialog', { name: 'Choose a district' }).waitFor()
+      await page.waitForTimeout(400)
+    },
+  },
+  {
+    session: 'S3',
+    file: '04-pin-selected-preview',
+    route: '#/app',
+    init: asDriver,
+    setup: async (page) => {
+      await waitForMap(page)
+      await tapPin(page, 'sp_kwuntong_1')
+      await page.locator('.spot-preview').waitFor()
+      await page.waitForTimeout(1200) // fly-to + tiles
+    },
+  },
+  {
+    session: 'S3',
+    file: '05-sheet-full-list',
+    route: '#/app',
+    init: asDriver,
+    setup: async (page) => {
+      await waitForMap(page)
+      await page.getByRole('button', { name: /Resize sheet/ }).click()
+      await page.getByRole('button', { name: /Resize sheet/ }).click()
+      await page.waitForTimeout(500)
+    },
+  },
+  {
+    session: 'S3',
+    file: '06-no-results',
+    route: '#/app',
+    init: asDriver,
+    setup: async (page) => {
+      await waitForMap(page)
+      await chip(page, 'CCS2')
+      await chip(page, 'Under $25')
+      await page.getByText('No chargers match these filters').waitFor()
+    },
+  },
+  {
+    session: 'S3',
+    file: '07-tile-failure-fallback',
+    route: '#/app',
+    init: async (context) => {
+      await asDriver(context)
+      await blockTiles(context)
+    },
+    setup: async (page) => {
+      await page.getByText('Map unavailable — showing list').waitFor({ timeout: 10000 })
+      await page.waitForTimeout(500)
+    },
+  },
+  {
+    session: 'S3',
+    file: '08-spot-details-top',
+    route: '#/app/spot/sp_kwuntong_1',
+    init: asDriver,
+  },
+  {
+    session: 'S3',
+    file: '09-spot-details-reviews',
+    route: '#/app/spot/sp_kwuntong_1',
+    init: asDriver,
+    setup: async (page) => {
+      await page.locator('#reviews').evaluate((el) => el.scrollIntoView({ block: 'start' }))
+      await page.waitForTimeout(300)
+    },
+  },
+  { session: 'S3', file: '10-bookings-empty', route: '#/app/bookings', init: asDriver },
+  { session: 'S3', file: '11-account', route: '#/app/account', init: asDriver },
+  {
+    session: 'S3',
+    file: '12-framed-1280x720-selected',
+    device: desktop(1280, 720),
+    route: '#/app',
+    init: asDriver,
+    setup: async (page) => {
+      await waitForMap(page)
+      await tapPin(page, 'sp_saikung_1')
+      await page.locator('.spot-preview').waitFor()
+      await page.waitForTimeout(1200)
+    },
+  },
+  {
+    session: 'S3',
+    file: '13-spot-details-weekend-ac',
+    route: '#/app/spot/sp_saikung_2',
+    init: asDriver,
+    setup: async (page) => {
+      await page.locator('#reviews').evaluate((el) => el.scrollIntoView({ block: 'end' }))
+      await page.locator('.scroll').evaluate((el) => el.scrollBy(0, -420))
+    },
+  },
+)
+
 async function fillRegistration(page, email) {
   await page.getByLabel('Full name').fill('Ho Ka Yan')
   await page.getByLabel('Email').fill(email)

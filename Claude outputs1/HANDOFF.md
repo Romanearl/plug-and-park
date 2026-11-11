@@ -1,28 +1,32 @@
-# Handoff — S1 + S2 done and pushed; Pages setup pending          Date: Wed 11 Nov 2026
+# Handoff — S3 in progress          Updated: Wed 11 Nov 2026
 
-## For the next Claude Code session — start here
-1. Read `Claude outputs1/CLAUDE.md`, `PLAN.md`, and `S1_REPORT.md` (covers S1 + S2).
-2. Read this file. Then do the "Next steps" below in order.
-3. **Standing instruction from Roman (11 Nov):** in this project, commit and push **without asking**, and after a session is finished and verified, go straight on to the next session in PLAN.md. This overrides CLAUDE.md §2 rule 1 and the "stop after report" step. Still ask before destructive git commands. (Also saved in Claude Code memory.)
+## Start here (next Claude Code session)
+1. Follow the **autonomous run protocol** in `Claude outputs1/CLAUDE.md` §2: read CLAUDE.md (sync root copy), PLAN.md, `PROGRESS.md`, `REVIEW_FIXES.md`.
+2. `git status` + `git log --oneline -8`. **Uncommitted S3 work is probably on disk — finish it and commit it, never discard it.**
+3. Continue S3 from "S3 status" below, then S4 → S10 (task files exist for all of them).
+4. Roman's standing permission: commit + push to `main` without asking (also in CLAUDE.md §2). No destructive git.
 
-## Status
-- **S1 (foundation) and S2 (auth) are complete.** typecheck + build pass; 19 screenshots in `screenshots/S1` and `S2`; checks pass (`scripts/checks/s1.mjs` 18/18, `s2.mjs` 62/62).
-- One commit `1607599 S1 + S2: foundation and auth` on `main`, **pushed** to https://github.com/Romanearl/plug-and-park (public).
-- `gh` is logged in as **Romanearl**, token scopes include `repo` and `workflow`.
-- The first "Deploy to GitHub Pages" Actions run (id 43012034515) started on push. **It will likely fail at configure-pages/deploy** because Pages isn't enabled yet.
+## Done so far
+- S1 + S2 complete, pushed (commit 1607599). Live: https://romanearl.github.io/plug-and-park/ (Pages = GitHub Actions, deploy green). Repo: https://github.com/Romanearl/plug-and-park
+- RF-1..RF-3 done (commit f80b076); `PROGRESS.md` created.
+- S3 section 0 committed (4dad60c): `npm run check` (scripts/check.mjs + scripts/lib/server.mjs), leaflet 1.9.4 + react-leaflet 5 + @types/leaflet; screenshots.mjs uses the shared server helper; checks read `PP_BASE`.
 
-## Next steps
-1. **Enable Pages (source = GitHub Actions).** Roman earlier said "do pages setup yourself", but when Claude ran
-   `gh api -X POST repos/Romanearl/plug-and-park/pages -f build_type=workflow`
-   Roman declined that action at that moment. **Ask Roman first** whether to run it, or whether he'll do it in GitHub → Settings → Pages → Source: GitHub Actions.
-2. Then re-run the deploy: `gh run rerun <id> --failed` or `gh workflow run "Deploy to GitHub Pages"`. Check it's green with `gh run list`/`gh run watch`.
-3. Check https://romanearl.github.io/plug-and-park/ loads, including a hard refresh on `#/owner`.
-4. Start **S3 — Discovery** (there's no `S3_TASK.md`; work from the PLAN.md S3 row + CLAUDE.md): Leaflet + react-leaflet with Carto Positron tiles, 12 custom price pins (selected = blue), district + charger-type filter chips, list view toggle, peek bottom sheet on pin tap, spot details (SVG photo carousel, price, rating + reviews, charger type/kW, amenities, availability, owner, "Request booking" CTA). **Verify pin taps/drags inside the scaled frame** (CLAUDE.md §7: switch to CSS `zoom` if `transform` breaks Leaflet). Add S3 scenarios to `scripts/screenshots.mjs`, write `S3_REPORT.md`, commit + push.
+## S3 status (uncommitted at time of writing — check `git status`)
+Written, typecheck passes:
+- `src/lib/availability.ts` (isOpenAt, nextOpening, windowsForDay, openStatus, formatAvailability), `src/lib/pricing.ts` (priceFor, isDcFast, estimateKwh), `src/lib/spots.ts` (filterSpots, sortSpots, districtCounts, DISTRICTS, CHARGER_TYPES), `fmtDate`/`shortName` in util.ts.
+- Components: `TabBar`, `RequireRole` (guards), `SnapSheet` (peek/half/full, drag + tap handle), `SpotPhoto` (deterministic SVG scenes), new icons (search, sort, phone, help).
+- Screens: `driver/MapHome.tsx` (lazy; pins, chips, district sheet, list/preview sheet, tile fallback), `driver/SpotDetails.tsx`, `driver/Account.tsx`, `driver/MyBookings.tsx` (empty state). `App.tsx` routes: /app, /app/bookings, /app/account, /app/spot/:id (driver guard), /owner (owner guard).
+- S3 CSS appended to app.css. S3 scenarios (13 shots) added to `scripts/screenshots.mjs`.
 
-## Useful notes
-- Run checks: `npm run preview` in one terminal, then `node scripts/checks/s1.mjs` / `s2.mjs`.
-- `npm run shots -- S3` shoots one session; `npm run shots -- all` re-shoots everything.
-- Playwright treats `aria-disabled` buttons as not clickable → use `click({ force: true })` on the Register "Continue" button in scripts.
-- PowerShell `Get-Content`/`Set-Content` mangle UTF-8 (em dashes, ×, →). Use the Edit tool or Bash for files with non-ASCII text. Use Bash heredocs for multi-line commit messages.
-- Stack versions: Node 26.13, npm 11.20, React 19.3, Vite 8.3, TypeScript 7.0 (native tsc), Playwright 1.65.
-- The empty `repo/` folder in the root must be left alone.
+**Decision:** CARTO tiles now return an "API KEY REQUIRED" watermark (2 KB image for every tile). Switched to `https://tile.openstreetmap.org/{z}/{x}/{y}.png` (no key) with a CSS grey filter on `.map .leaflet-tile-pane`. Log this in S3_REPORT "Decisions made"; reviewer should update CLAUDE.md §3.
+
+## S3 remaining
+1. `npm run shots -- S3`, self-review every PNG (tile-failure shot 07 was failing before the TileLayer-event fix — re-check).
+2. Write `scripts/checks/s3.mjs` covering every S3 "done when" item: 12 pins + filter counts (CCS2=3: Kwun Tong, Kowloon Bay, Wan Chai; CCS2+Under $25=0), district fly, pin/card tap selects (full screen AND framed 1280×720), sheet snaps by drag + tap, list scroll doesn't move map, blocked tiles → banner, details for sp_kwuntong_1 (DC), sp_saikung_1 (AC weekdays), sp_saikung_2 (weekend-only), unit checks for isOpenAt/formatAvailability/priceFor (Node 26 can `import()` the .ts files directly — they only use `import type`), guards for both roles, tab bar hides on details.
+3. **Earlier checks need updating for S3 (adapt, don't weaken):** s1 tab-B steps expected the `#/app` placeholder text "Chan Tai Man"/"Signed in as" — now `#/app` is the map; check the name on `#/app/account` instead. s1 "Deep link #/owner after hard refresh" must sign in as owner first (guard). s2 "lands on #/app signed in" must check the name via `#/app/account`. S2 shot `12-app-new-user` likewise. Note these adaptations in the report.
+4. `npm run check` all green → S3_REPORT.md → mark S3 done in PROGRESS.md → commit + push → check Actions green + live URL.
+
+## Gotchas
+- PowerShell mangles UTF-8 with Get-Content/Set-Content; use Edit tool or Bash/node. Bash heredocs containing `''` inside can break — write a file with the Write tool instead.
+- Playwright won't click `aria-disabled` buttons → `click({ force: true })`.
+- The empty `repo/` folder: leave it (ignored in .gitignore).

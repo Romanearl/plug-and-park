@@ -109,7 +109,8 @@ async function request(p, time, dur = '1 h', frame = p) {
   const card = owner.locator(`.request-card[data-booking="${bid}"]`)
   check('Pending on owner side, live', await seen(card, 3000))
   check('Card shows driver rating + ratings count + vehicle', (await card.textContent()).includes('4.9') && (await card.textContent()).includes('23 ratings') && (await card.textContent()).includes('Tesla Model Y'))
-  check('Card shows "You earn HK$24.60" and "HK$30.00 − 18% service fee"', (await card.textContent()).includes('You earn HK$24.60') && (await card.textContent()).includes('HK$30.00 − 18% service fee'))
+  // S6 §1: the card now shows the net after both fees.
+  check('Card shows "You earn HK$23.70" after 18% service + 3% payment fee', (await card.textContent()).includes('You earn HK$23.70') && (await card.textContent()).includes('after 18% service fee and 3% payment fee'))
   check('Owner header "2 requests waiting"', await seen(owner.getByText('2 requests waiting')))
 
   // Approve → driver flips live

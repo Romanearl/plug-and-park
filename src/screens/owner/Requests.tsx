@@ -7,7 +7,7 @@ import { Icon } from '../../components/Icon'
 import type { Booking, User } from '../../data/types'
 import { endOf, fmtDuration, hhmm } from '../../lib/booking'
 import { approveBooking, declineBooking, DECLINE_REASONS } from '../../lib/bookingActions'
-import { ownerEarnings } from '../../lib/pricing'
+import { netOf } from '../../lib/money'
 import { useCurrentUser, useDB } from '../../lib/store'
 import { cx, fmtDate, hkd } from '../../lib/util'
 
@@ -175,7 +175,7 @@ function RequestCard({
   onDecline: () => void
 }) {
   const start = new Date(b.start)
-  const earn = ownerEarnings(b.price, b.commissionRate)
+  const earn = netOf(b)
   return (
     <article className={cx('card request-card', state && `done-${state}`)} data-booking={b.id}>
       <div className="row" style={{ gap: 12 }}>
@@ -198,9 +198,7 @@ function RequestCard({
       <div className="row" style={{ justifyContent: 'space-between', marginTop: 12 }}>
         <div>
           <div style={{ fontWeight: 800, fontSize: 18 }}>You earn {hkd(earn)}</div>
-          <div className="caption">
-            HK${b.price.toFixed(2)} − {Math.round(b.commissionRate * 100)}% service fee
-          </div>
+          <div className="caption">after {Math.round(b.commissionRate * 100)}% service fee and 3% payment fee</div>
         </div>
       </div>
       {state ? (

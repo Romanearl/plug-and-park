@@ -30,6 +30,8 @@ export interface User {
   rating: number
   ratingCount: number
   vehicle?: string
+  /** Owners: masked payout method on file, e.g. "FPS •••• 9876". */
+  payoutMethod?: string
   createdAt: string
 }
 
@@ -121,6 +123,8 @@ export interface Payout {
   ownerId: string
   amount: number
   method: 'FPS' | 'Bank transfer'
+  /** Masked destination, e.g. "FPS •••• 9876" or "Bank A •••• 4321". Never the full number. */
+  destination?: string
   status: 'processing' | 'paid'
   createdAt: string
 }

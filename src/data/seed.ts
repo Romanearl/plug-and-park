@@ -4,7 +4,7 @@
 import type { AvailabilityWindow, Booking, DB, Review, Spot, User } from './types'
 import { addMinutes, dayAt, fakeHash } from '../lib/util'
 
-export const DB_VERSION = 3 // 2: Booking.declineReason (S4) · 3: paidAt / startedAt / completedAt (S5)
+export const DB_VERSION = 4 // 2: Booking.declineReason (S4) · 3: paidAt / startedAt / completedAt (S5) · 4: payout destination + payoutMethod (S6)
 
 export const DEMO_PASSWORD = 'Demo1234!'
 export const DEMO_OTP = '123456'
@@ -40,7 +40,7 @@ function users(): User[] {
     u({ id: 'u_driver_demo', role: 'driver', name: 'Chan Tai Man', email: 'driver@plugpark.demo', phone: '+852 9123 4567', rating: 4.9, ratingCount: 23, vehicle: 'Tesla Model Y' }),
     u({ id: 'u_driver_2', role: 'driver', name: 'Lam Chi Keung', email: 'lam.ck@plugpark.demo', rating: 4.6, ratingCount: 11, vehicle: 'BYD Atto 3' }),
     u({ id: 'u_driver_3', role: 'driver', name: 'Sarah Ng', email: 'sarah.ng@plugpark.demo', rating: 4.95, ratingCount: 40, vehicle: 'MG4 Electric' }),
-    u({ id: 'u_owner_demo', role: 'owner', name: 'Wong Mei Ling', email: 'owner@plugpark.demo', phone: '+852 6123 9876', rating: 4.8, ratingCount: 57 }),
+    u({ id: 'u_owner_demo', role: 'owner', name: 'Wong Mei Ling', email: 'owner@plugpark.demo', phone: '+852 6123 9876', rating: 4.8, ratingCount: 57, payoutMethod: 'FPS •••• 9876' }),
     u({ id: 'u_owner_2', role: 'owner', name: 'Lee Ka Fai', email: 'lee.kf@plugpark.demo', rating: 4.7, ratingCount: 19 }),
     u({ id: 'u_owner_3', role: 'owner', name: 'Kwok Wing (Wing Fat Industrial)', email: 'kwok.w@plugpark.demo', rating: 4.5, ratingCount: 33 }),
     u({ id: 'u_owner_4', role: 'owner', name: 'Ho Siu Ming', email: 'ho.sm@plugpark.demo', rating: 4.9, ratingCount: 8 }),

@@ -8,3 +8,10 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Warm the lazy chunks (map, owner application) a few seconds after start-up, so every screen
+// still opens if the venue Wi-Fi drops mid-demo. The landing page itself never waits for Leaflet.
+window.setTimeout(() => {
+  void import('./screens/driver/MapHome').catch(() => {})
+  void import('./screens/owner/Apply').catch(() => {})
+}, 3000)

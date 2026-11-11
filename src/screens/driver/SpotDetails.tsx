@@ -2,9 +2,9 @@
 // availability, access, host, reviews and a sticky "Request booking" bar.
 
 import { useRef, useState } from 'react'
-import { BottomSheet } from '../../components/BottomSheet'
 import { Icon } from '../../components/Icon'
 import { SpotPhoto } from '../../components/SpotPhoto'
+import { BookingSheet } from './BookingSheet'
 import type { Spot } from '../../data/types'
 import { formatAvailability, openStatus } from '../../lib/availability'
 import { estimateKwh, isDcFast, priceFor } from '../../lib/pricing'
@@ -210,18 +210,7 @@ export function SpotDetails({ id }: { id: string }) {
         </button>
       </div>
 
-      <BottomSheet open={bookingOpen} onClose={() => setBookingOpen(false)} title="Request booking" labelId="book-title">
-        <div className="banner info" style={{ marginTop: 4 }}>
-          <Icon name="info" size={20} />
-          <span>Booking opens in the next build.</span>
-        </div>
-        <p className="muted" style={{ marginTop: 12 }}>
-          Soon you'll pick a day, a start time and 15 min – 2 h here, and the owner approves the request.
-        </p>
-        <button className="btn btn-primary block" style={{ marginTop: 20 }} onClick={() => setBookingOpen(false)}>
-          Got it
-        </button>
-      </BottomSheet>
+      <BookingSheet spot={spot} open={bookingOpen} onClose={() => setBookingOpen(false)} />
     </div>
   )
 }

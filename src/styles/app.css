@@ -672,3 +672,26 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
 /* Mute OSM tiles toward the light, low-contrast "Positron" look. */
 .map .leaflet-tile-pane { filter: grayscale(0.85) brightness(1.06) contrast(0.88); }
 .map-attribution.hidden { display: none; }
+
+/* ── Booking (S4) ─────────────────────────────────────────────────────── */
+
+.sheet.full { height: calc(100% - 24px); }
+.sheet.full .sheet-body { flex: 1; }
+.sheet-footer { flex-shrink: 0; padding: 12px var(--gutter) calc(16px + var(--safe-bottom, 0px)); border-top: 1px solid var(--line); background: var(--bg); }
+.chip-scroll { display: flex; gap: 8px; overflow-x: auto; margin: 8px calc(-1 * var(--gutter)) 0; padding: 0 var(--gutter) 2px; scrollbar-width: none; }
+.chip-scroll::-webkit-scrollbar { display: none; }
+.chip-scroll .chip { flex-shrink: 0; }
+.chip:disabled { opacity: .35; cursor: not-allowed; }
+.time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+.time-chip {
+  height: 44px; border: 0; border-radius: var(--r-md); background: var(--surface);
+  font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.time-chip.active { background: var(--ink); color: #fff; }
+.time-chip:disabled { color: var(--muted-2); background: transparent; text-decoration: line-through; cursor: not-allowed; }
+.summary-card { margin-top: 20px; padding: 14px 16px; border-radius: var(--r-lg); background: var(--blue-tint); }
+.notice { margin-top: 20px; padding: 14px 16px; border-radius: var(--r-lg); animation: rise 240ms var(--ease); }
+.notice.amber { background: var(--warning-tint); color: var(--warning); }
+.notice.amber .btn { background: #fff; color: var(--ink); }
+.notice.red { background: var(--danger-tint); color: var(--danger); }
+.btn .spinner { width: 20px; height: 20px; }

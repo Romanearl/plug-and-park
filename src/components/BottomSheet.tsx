@@ -8,12 +8,18 @@ export function BottomSheet({
   title,
   children,
   labelId = 'sheet-title',
+  full = false,
+  footer,
 }: {
   open: boolean
   onClose: () => void
   title: ReactNode
   children: ReactNode
   labelId?: string
+  /** Full height (e.g. the booking sheet). */
+  full?: boolean
+  /** Pinned under the scrolling body (e.g. the primary CTA). */
+  footer?: ReactNode
 }) {
   useEffect(() => {
     if (!open) return
@@ -26,7 +32,7 @@ export function BottomSheet({
   return (
     <>
       <div className="scrim" onClick={onClose} />
-      <div className="sheet" role="dialog" aria-modal="true" aria-labelledby={labelId}>
+      <div className={full ? 'sheet full' : 'sheet'} role="dialog" aria-modal="true" aria-labelledby={labelId}>
         <div className="sheet-handle" />
         <div className="sheet-head">
           <h2 className="h2" id={labelId} style={{ flex: 1 }}>
@@ -37,6 +43,7 @@ export function BottomSheet({
           </button>
         </div>
         <div className="sheet-body">{children}</div>
+        {footer && <div className="sheet-footer">{footer}</div>}
       </div>
     </>
   )

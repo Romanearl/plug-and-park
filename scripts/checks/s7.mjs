@@ -133,9 +133,16 @@ let newSpotId = null
   // Platform: approve (Yes) → finish setup → go live
   await owner.getByRole('button', { name: 'Back to home' }).click()
   sheet = await demoSheet(owner)
+  // Record every toast text (toasts are transient, so a late look could miss one).
+  await owner.evaluate(() => {
+    window.__toasts = []
+    new MutationObserver(() => document.querySelectorAll('.notify-toast').forEach((t) => window.__toasts.push(t.textContent))).observe(document.body, { childList: true, subtree: true })
+  })
   await sheet.locator(`[data-admin-spot="${newSpotId}"]`).getByRole('button', { name: 'Approve' }).click()
   await sheet.getByRole('button', { name: 'Close' }).click()
-  check('Approved → toast + "one last step" card', (await seen(owner.getByText('You’re approved — finish setup to go live'))) && (await seen(owner.getByText('You’re approved — one last step'))))
+  const card = await seen(owner.getByText('You’re approved — one last step'))
+  const toastSeen = await owner.waitForFunction(() => window.__toasts.some((t) => t.includes('You’re approved — finish setup to go live')), null, { timeout: 4000 }).then(() => true, () => false)
+  check('Approved → toast + "one last step" card', card && toastSeen)
   db = await dbOf(owner)
   check('Approved but not live until setup', db.spots.find((s) => s.id === newSpotId).active === false)
   await owner.getByRole('button', { name: 'Finish setup' }).click()

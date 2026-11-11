@@ -940,3 +940,13 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
 .skeleton { padding: 20px var(--gutter); }
 .sk { border-radius: var(--r-md); background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
 @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* 44px tap targets without changing the visual size: chips stay 36px tall, text links stay inline. */
+.chip { position: relative; }
+.chip::after { content: ""; position: absolute; left: 0; right: 0; top: -4px; bottom: -4px; }
+.text-link { display: inline-flex; align-items: center; min-height: 44px; }
+/* 44px hit areas: sheet handle and the Price/Rating toggle */
+.snap-handle { position: relative; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
+.snap-handle .sheet-handle { margin: 0; }
+.snap-handle::after { content: ""; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
+.segmented button { position: relative; }
+.segmented button::after { content: ""; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }

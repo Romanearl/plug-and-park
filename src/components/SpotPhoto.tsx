@@ -260,7 +260,6 @@ export function SpotPhoto(props: {
         className={className}
         src={`${import.meta.env.BASE_URL}photos/${file}`}
         alt={`Photo ${index + 1} of ${spot.title}`}
-        loading="lazy"
         decoding="async"
         onError={() => setBroken(file)}
         style={{ objectFit: 'cover', borderRadius: rounded || undefined, background: 'var(--surface)' }}

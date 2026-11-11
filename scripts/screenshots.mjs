@@ -50,7 +50,7 @@ const scenarios = [
       await openDemoSheet(page)
       await page.getByRole('button', { name: 'Sign in as charger owner' }).click()
       await page.waitForURL(/#\/owner$/)
-      await page.getByText('Wong Mei Ling').waitFor()
+      await page.getByRole('heading', { name: 'Hi, Mei Ling' }).waitFor()
     },
   },
   { session: 'S1', file: '05-register-placeholder', route: '#/register' },

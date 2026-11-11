@@ -33,6 +33,15 @@ export function useStatusBar(theme: BarTheme) {
 
 // ── Viewport ────────────────────────────────────────────────────────────
 
+/** Inside the presenter view's iframes: no frame, but show the fake status bar so each phone looks complete. */
+export const IN_IFRAME = (() => {
+  try {
+    return window.self !== window.top
+  } catch {
+    return true
+  }
+})()
+
 const DEVICE_W = 414 // 390 + 2×12 bezel
 const DEVICE_H = 868 // 844 + 2×12 bezel
 
@@ -105,10 +114,12 @@ export function PhoneFrame({ banner, children }: { banner: ReactNode; children: 
 
   if (!framed) {
     return (
-      <div className="stage full">
+      <div className={cx('stage full', IN_IFRAME && 'in-iframe')}>
         <div className={cx('screen', theme === 'dark' && 'dark-top')}>
+          {IN_IFRAME && <StatusBar />}
           {banner}
           <div className="app-body">{children}</div>
+          {IN_IFRAME && <HomeIndicator />}
         </div>
       </div>
     )

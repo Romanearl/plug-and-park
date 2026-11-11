@@ -291,7 +291,7 @@ const center = (p) => p.evaluate(() => {
   await p.evaluate(() => sessionStorage.setItem('pp.session.main', 'u_owner_demo'))
   await p.goto('about:blank')
   await p.goto(BASE + '#/app/account')
-  check('Guard: owner on /app → #/owner', await seen(p.getByRole('heading', { name: 'Owner dashboard' })) && p.url().endsWith('#/owner'))
+  check('Guard: owner on /app → #/owner', await seen(p.getByRole('heading', { name: 'Hi, Mei Ling' })) && p.url().endsWith('#/owner'))
   await p.evaluate(() => sessionStorage.setItem('pp.session.main', 'u_driver_demo'))
   await p.goto('about:blank')
   await p.goto(BASE + '#/owner')

@@ -116,6 +116,13 @@ export function signOut() {
   emit()
 }
 
+/** Re-seed the data only (keeps sessions and the route). Used by the presenter view. */
+export function reseedDemo() {
+  db = createSeed()
+  safeSet('local', DB_KEY, JSON.stringify(db))
+  emit()
+}
+
 /** Wipe everything back to the seed data, sign out and go to the landing page. */
 export function resetDemo() {
   // Navigate first (synchronously), so route guards don't bounce the signed-out window to #/login.

@@ -166,7 +166,7 @@ const cont = (p) => p.getByRole('button', { name: 'Continue' })
     document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }))
   })
   await p.waitForURL(/#\/owner$/, { timeout: 5000 }).catch(() => {})
-  check('Paste fills all boxes, auto-submits → owner lands on #/owner', p.url().endsWith('#/owner') && (await seen(p.getByText('Wong Mei Ling'))))
+  check('Paste fills all boxes, auto-submits → owner lands on #/owner', p.url().endsWith('#/owner') && (await seen(p.getByRole('heading', { name: 'Hi, Mei Ling' }))) // S4: owner home is Requests)
   await ctx.close()
 }
 

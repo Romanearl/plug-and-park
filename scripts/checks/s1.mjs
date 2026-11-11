@@ -39,7 +39,7 @@ for (const [w, h] of [[520, 900], [1280, 720], [1440, 900]]) {
   await a.getByRole('button', { name: /Demo only/ }).click()
   await a.getByRole('button', { name: 'Sign in as charger owner' }).click()
   await a.waitForURL(/#\/owner$/)
-  check('Demo sheet -> owner -> #/owner shows name', await a.getByText('Wong Mei Ling').isVisible())
+  check('Demo sheet -> owner -> #/owner shows name', await seen(a.getByRole('heading', { name: 'Hi, Mei Ling' })) // S4: owner home is Requests)
 
   // Driver sign-in in a second tab
   const b = await ctx.newPage()
@@ -51,7 +51,7 @@ for (const [w, h] of [[520, 900], [1280, 720], [1440, 900]]) {
   await b.goto(BASE + '#/app/account') // S3: name shown on Account (#/app is the map now)
   check('Demo sheet -> driver -> #/app shows name', await seen(b.getByText('Chan Tai Man')))
   await a.reload()
-  check('Tab A still owner after B signed in as driver + reload', await a.getByText('Wong Mei Ling').isVisible())
+  check('Tab A still owner after B signed in as driver + reload', await seen(a.getByRole('heading', { name: 'Hi, Mei Ling' })))
 
   // Change data in tab A -> appears live in tab B
   await a.evaluate(() => {
@@ -87,7 +87,7 @@ for (const [w, h] of [[520, 900], [1280, 720], [1440, 900]]) {
   const p = await ctx.newPage()
   const res = await p.goto(BASE + '#/owner')
   await p.reload()
-  check('Deep link #/owner after hard refresh', res.ok() && (await p.getByRole('heading', { name: 'Owner dashboard' }).isVisible()))
+  check('Deep link #/owner after hard refresh', res.ok() && (await seen(p.getByRole('heading', { name: 'Hi, Mei Ling' }))))
   await p.goto(BASE + '#/nope')
   check('Unknown route -> Page not found', await p.getByRole('heading', { name: 'Page not found' }).isVisible())
   await p.getByRole('button', { name: 'Back', exact: true }).click()

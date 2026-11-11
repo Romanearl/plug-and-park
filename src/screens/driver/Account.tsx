@@ -12,7 +12,7 @@ export function Account() {
   const rows: { icon: IconName; label: string; value?: string }[] = [
     { icon: 'mail', label: 'Email', value: user.email },
     { icon: 'phone', label: 'Mobile', value: user.phone ?? 'Not added' },
-    { icon: 'car', label: 'Vehicle', value: user.vehicle ?? 'Not added' },
+    ...(user.role === 'driver' ? [{ icon: 'car' as IconName, label: 'Vehicle', value: user.vehicle ?? 'Not added' }] : []),
   ]
 
   return (
@@ -31,7 +31,7 @@ export function Account() {
                 <Icon name="star" size={16} fill="currentColor" stroke={0} />
                 <span style={{ fontWeight: 600 }}>{user.ratingCount ? user.rating.toFixed(1) : 'New'}</span>
                 <span className="caption">
-                  {user.ratingCount ? `· ${user.ratingCount} ratings from owners` : '· no ratings yet'}
+                  {user.ratingCount ? `· ${user.ratingCount} ratings from ${user.role === 'owner' ? 'drivers' : 'owners'}` : '· no ratings yet'}
                 </span>
               </div>
             </div>

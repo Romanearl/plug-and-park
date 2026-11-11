@@ -5,6 +5,7 @@ import { DEMO_ACCOUNTS, DEMO_CARDS, DEMO_OTP, DEMO_PASSWORD } from '../data/seed
 import { navigate } from '../lib/router'
 import { resetDemo, signIn, useCurrentUser } from '../lib/store'
 import { BottomSheet } from './BottomSheet'
+import { IN_IFRAME } from './PhoneFrame'
 import { Icon } from './Icon'
 
 export function DemoBanner() {
@@ -88,6 +89,17 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
         <button className="btn btn-accent block" onClick={() => go(DEMO_ACCOUNTS.owner.userId, '/owner')}>
           <Icon name="plug" size={20} /> Sign in as charger owner
         </button>
+        {!IN_IFRAME && window.innerWidth >= 520 && (
+          <button
+            className="btn btn-ghost block"
+            onClick={() => {
+              onClose()
+              navigate('/presenter')
+            }}
+          >
+            <Icon name="map" size={20} /> Open presenter view (two phones)
+          </button>
+        )}
         {confirmReset ? (
           <button
             className="btn btn-danger block"

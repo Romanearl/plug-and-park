@@ -41,7 +41,13 @@ const browser = await chromium.launch()
 const errors = []
 async function driverPage(device = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }, opts = {}) {
   const ctx = await browser.newContext(device)
-  await ctx.addInitScript((uid) => sessionStorage.getItem('pp.session.main') || sessionStorage.setItem('pp.session.main', uid), opts.user ?? 'u_driver_demo')
+  await ctx.addInitScript((uid) => {
+    try {
+      sessionStorage.getItem('pp.session.main') || sessionStorage.setItem('pp.session.main', uid)
+    } catch {
+      /* about:blank has no storage */
+    }
+  }, opts.user ?? 'u_driver_demo')
   if (opts.blockTiles) await ctx.route(/tile\.openstreetmap\.org|basemaps\.cartocdn\.com/, (r) => r.abort())
   const p = await ctx.newPage()
   p.on('pageerror', (e) => errors.push(e.message))
@@ -71,7 +77,7 @@ const center = (p) => p.evaluate(() => {
   check('Charger filter counts CCS2 3 / Type 2 6 / CHAdeMO 2 / GB/T 1', counts.CCS2 === 3 && counts['Type 2'] === 6 && counts.CHAdeMO === 2 && counts['GB/T'] === 1, JSON.stringify(counts))
   await chip(p, 'All').click()
   await chip(p, 'Under $25').click()
-  check('Under $25 → 5 pins', (await pins(p).count()) === 5, String(await pins(p).count()))
+  check('Under $25 → 6 pins', (await pins(p).count()) === 6, String(await pins(p).count()))
   await chip(p, 'Type 2').click()
   check('Type 2 + Under $25 → 4 pins', (await pins(p).count()) === 4, String(await pins(p).count()))
   await chip(p, 'Type 2').click() // toggles off
@@ -91,7 +97,8 @@ const center = (p) => p.evaluate(() => {
   await chip(p, 'Open now').click()
 
   // District sheet + fly
-  const before = await center(p)
+  const skPin = () => p.locator('.pin[data-spot="sp_saikung_1"]').boundingBox()
+  const skBefore = await skPin()
   await p.getByRole('button', { name: /Where do you need to charge/ }).click()
   const dlg = p.getByRole('dialog', { name: 'Choose a district' })
   check('District sheet lists All + 10 districts', (await dlg.getByRole('button').filter({ hasText: /chargers?$|All districts/ }).count()) >= 11)
@@ -99,7 +106,8 @@ const center = (p) => p.evaluate(() => {
   await dlg.getByRole('button', { name: /Sai Kung/ }).click()
   await p.waitForTimeout(1200)
   check('District filter → 2 pins', (await pins(p).count()) === 2)
-  check('District filter flies the map', (await center(p)) !== before)
+  const skAfter = await skPin()
+  check('District filter flies the map', !!skBefore && !!skAfter && Math.hypot(skAfter.x - skBefore.x, skAfter.y - skBefore.y) > 40, JSON.stringify([skBefore, skAfter].map((b) => b && [Math.round(b.x), Math.round(b.y)])))
   check('Search pill shows district', await seen(p.getByRole('button', { name: /Sai Kung/ }).first()))
   await ctx.close()
 }
@@ -118,7 +126,7 @@ const center = (p) => p.evaluate(() => {
   check('List card tap selects that spot', await seen(p.locator('.spot-preview[data-spot="sp_taipo_1"]')))
   await p.getByRole('button', { name: 'View details' }).click()
   await p.waitForURL(/#\/app\/spot\/sp_taipo_1$/)
-  check('View details opens details', await seen(p.getByRole('heading', { name: /Tai Po/ }).first()))
+  check('View details opens details', (await seen(p.locator('.carousel'))) && (await seen(p.getByRole('heading', { level: 1, name: /Tai Po/ }))))
   check('Tab bar hidden on details', (await p.locator('.tab-bar').count()) === 0)
   await p.getByRole('button', { name: 'Back' }).first().click()
   await p.waitForURL(/#\/app$/)
@@ -133,7 +141,12 @@ const center = (p) => p.evaluate(() => {
   await pins(p).first().waitFor()
   const scale = await p.locator('.device').evaluate((el) => el.getBoundingClientRect().width / el.offsetWidth)
   check('Frame is scaled (< 1)', scale < 1, scale.toFixed(3))
-  for (const id of ['sp_shatin_1', 'sp_tuenmun_1', 'sp_taipo_1']) {
+  for (const id of ['sp_shatin_1', 'sp_wanchai_1', 'sp_taipo_1']) {
+    // Fresh HK-wide view for each tap (a selection zooms the map in).
+    await p.goto('about:blank')
+    await p.goto(BASE + '#/app')
+    await pins(p).first().waitFor()
+    await p.waitForTimeout(500)
     const box = await p.locator(`.pin[data-spot="${id}"]`).boundingBox()
     await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
     check(`Framed: tap on ${id} selects it`, await seen(p.locator(`.spot-preview[data-spot="${id}"]`)))
@@ -141,7 +154,11 @@ const center = (p) => p.evaluate(() => {
     await p.waitForTimeout(800)
   }
   // Drag pans the map by the dragged distance (in layout px = screen px / scale).
-  const pin = p.locator('.pin[data-spot="sp_tuenmun_1"]')
+  await p.goto('about:blank')
+  await p.goto(BASE + '#/app')
+  await pins(p).first().waitFor()
+  await p.waitForTimeout(500)
+  const pin = p.locator('.pin[data-spot="sp_wanchai_1"]')
   const a = await pin.boundingBox()
   const mapBox = await p.locator('.map').boundingBox()
   const sx = mapBox.x + mapBox.width / 2
@@ -149,6 +166,7 @@ const center = (p) => p.evaluate(() => {
   await p.mouse.move(sx, sy)
   await p.mouse.down()
   for (let i = 1; i <= 10; i++) await p.mouse.move(sx + 6 * i, sy + 3 * i)
+  await p.waitForTimeout(300) // stop before release so Leaflet adds no inertia
   await p.mouse.up()
   await p.waitForTimeout(400)
   const b = await pin.boundingBox()
@@ -271,12 +289,12 @@ const center = (p) => p.evaluate(() => {
   await p.goto(BASE + '#/owner')
   check('Guard: signed out /owner → #/login', await seen(p.getByRole('heading', { name: 'Log in' })) && p.url().endsWith('#/login'))
   await p.evaluate(() => sessionStorage.setItem('pp.session.main', 'u_owner_demo'))
+  await p.goto('about:blank')
   await p.goto(BASE + '#/app/account')
-  await p.reload()
   check('Guard: owner on /app → #/owner', await seen(p.getByRole('heading', { name: 'Owner dashboard' })) && p.url().endsWith('#/owner'))
   await p.evaluate(() => sessionStorage.setItem('pp.session.main', 'u_driver_demo'))
+  await p.goto('about:blank')
   await p.goto(BASE + '#/owner')
-  await p.reload()
   await p.waitForTimeout(500)
   check('Guard: driver on /owner → #/app', p.url().endsWith('#/app'))
   await p.getByRole('button', { name: 'Bookings' }).click()

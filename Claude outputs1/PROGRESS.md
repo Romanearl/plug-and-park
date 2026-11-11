@@ -1,6 +1,6 @@
 # Progress            Last updated: Wed 11 Nov 2026 14:40
 Repo: https://github.com/Romanearl/plug-and-park (public)
-Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: d5212a8 (S6)
+Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: fb67d6b (S7)
 
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599

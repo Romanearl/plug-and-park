@@ -53,6 +53,12 @@ npm run preview                   # http://localhost:4173/plug-and-park/
 npm run shots -- S1               # build + preview + screenshots → "Claude outputs1/screenshots/S1/"
 ```
 
+## Photo credits
+
+Spot photos live in `public/photos/` (see `public/photos/README.md` for how to add them). Until a spot has one, the app shows a generated illustration. Add one line per photo here:
+
+- _(none yet — all spot images are generated illustrations)_
+
 ## Team
 
 Built by **Group 2, IIMT 2601 (HKU)**.

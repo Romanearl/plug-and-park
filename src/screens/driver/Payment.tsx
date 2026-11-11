@@ -80,6 +80,7 @@ export function Payment({ id }: { id: string }) {
       </div>
       <div className="scroll">
         <form
+          id="pay-form"
           className="page stack"
           style={{ gap: 18, paddingBottom: 28 }}
           noValidate
@@ -184,16 +185,19 @@ export function Payment({ id }: { id: string }) {
             <Icon name="lock" size={16} /> Demo only — no real payment is taken. Never enter a real card.
           </p>
 
-          <button type="submit" className={cx('btn btn-primary block', !f.valid && !processing && 'is-disabled')} aria-disabled={!f.valid} disabled={processing}>
-            {processing ? (
-              <>
-                <span className="spinner" aria-hidden /> Processing…
-              </>
-            ) : (
-              `Pay ${hkd(b.price)}`
-            )}
-          </button>
         </form>
+      </div>
+      {/* The primary action stays in thumb reach, outside the scrolling form. */}
+      <div className="bottom-bar">
+         <button type="submit" form="pay-form" className={cx('btn btn-primary block', !f.valid && !processing && 'is-disabled')} aria-disabled={!f.valid} disabled={processing}>
+           {processing ? (
+             <>
+               <span className="spinner" aria-hidden /> Processing…
+             </>
+           ) : (
+             `Pay ${hkd(b.price)}`
+           )}
+         </button>
       </div>
     </div>
   )

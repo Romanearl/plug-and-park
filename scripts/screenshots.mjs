@@ -936,7 +936,9 @@ const IGNORED = /fonts\.googleapis|fonts\.gstatic|basemaps\.cartocdn|tile\.opens
 async function main() {
   const arg = process.argv[2]
   if (!arg) throw new Error('Usage: npm run shots -- S<n>   (or: all)')
-  const sessions = arg === 'all' ? [...new Set(scenarios.map((s) => s.session))] : [arg.toUpperCase()]
+  // S8 = the polish session: re-shoot EVERY earlier scenario into S8/ as <session>-<file>.png (before/after compare).
+  const polish = arg.toUpperCase() === 'S8'
+  const sessions = arg === 'all' || polish ? [...new Set(scenarios.map((s) => s.session))] : [arg.toUpperCase()]
   const todo = scenarios.filter((s) => sessions.includes(s.session))
   if (todo.length === 0) throw new Error(`No scenarios for ${arg}`)
 
@@ -949,7 +951,7 @@ async function main() {
   try {
     browser = await chromium.launch()
 
-    for (const session of sessions) {
+    for (const session of polish ? ['S8'] : sessions) {
       const dir = path.join(OUT_ROOT, session)
       fs.mkdirSync(dir, { recursive: true })
       for (const f of fs.readdirSync(dir)) if (f.endsWith('.png')) fs.rmSync(path.join(dir, f))
@@ -975,7 +977,7 @@ async function main() {
       await page.evaluate(() => document.fonts.ready)
       if (sc.setup) await sc.setup(page)
       await page.waitForTimeout(sc.settle ?? 300)
-      const out = path.join(OUT_ROOT, sc.session, `${sc.file}.png`)
+      const out = polish ? path.join(OUT_ROOT, 'S8', `${sc.session}-${sc.file}.png`) : path.join(OUT_ROOT, sc.session, `${sc.file}.png`)
       await page.screenshot({ path: out })
       console.log(`  ✓ ${path.relative(ROOT, out)}`)
       count++

@@ -7,7 +7,7 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: be4
 - [x] S2 Auth — done 11 Nov, commit 1607599
 - [x] S3 Discovery — done 11 Nov (report S3_REPORT.md)
 - [x] S4 Booking core — done 11 Nov (S4_REPORT.md)
-- [ ] S5 Driver path — IN PROGRESS: sections 0–1 + actions done; next: Payment, Confirmation, Session, Rate, Bookings screens
+- [ ] S5 Driver path — IN PROGRESS: all screens built + committed; next: scripts/checks/s5.mjs, shots, report
 - [ ] S6 Owner side
 - [ ] S7 Onboarding + branches
 - [ ] S8 Visual polish

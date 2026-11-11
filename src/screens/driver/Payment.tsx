@@ -77,9 +77,6 @@ export function Payment({ id }: { id: string }) {
         <button className="icon-btn" onClick={() => navigate(`/app/booking/${b.id}`, { replace: true })} aria-label="Back" disabled={processing}>
           <Icon name="back" />
         </button>
-        <h1 className="h2" style={{ flex: 1 }}>
-          Payment
-        </h1>
       </div>
       <div className="scroll">
         <form
@@ -91,6 +88,7 @@ export function Payment({ id }: { id: string }) {
             void submit()
           }}
         >
+          <h1 className="h1">Payment</h1>
           <section className="card flat">
             <div className="row" style={{ gap: 12 }}>
               <SpotPhoto spot={spot} className="spot-thumb" />

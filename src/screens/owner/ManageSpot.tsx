@@ -45,12 +45,12 @@ export function ManageSpot({ id }: { id: string }) {
         <button className="icon-btn" onClick={() => navigate('/owner/spots', { replace: true })} aria-label="Back">
           <Icon name="back" />
         </button>
-        <h1 className="h2" style={{ flex: 1 }}>
-          Manage spot
-        </h1>
       </div>
       <div className="scroll">
         <div className="page" style={{ paddingBottom: 32 }}>
+          <h1 className="h1" style={{ marginBottom: 16 }}>
+            Manage spot
+          </h1>
           <div className="row" style={{ gap: 12 }}>
             <SpotPhoto spot={spot} className="spot-thumb" />
             <div style={{ minWidth: 0 }}>

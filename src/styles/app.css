@@ -918,3 +918,25 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
    clip makes the frame layers unscrollable (only .scroll / sheet bodies scroll). */
 .screen, .app-body, .shell-body, .map-home, .screen-view { overflow: clip; }
 .screen-view { overflow: clip; }
+
+/* ── Route transitions (S8) ───────────────────────────────────────────── */
+.route { position: absolute; inset: 0; }
+.route-forward { animation: route-in-right 240ms var(--ease) both; }
+.route-back { animation: route-in-left 240ms var(--ease) both; }
+.route-fade { animation: route-fade 200ms var(--ease) both; }
+@keyframes route-in-right { from { opacity: .5; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes route-in-left { from { opacity: .5; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes route-fade { from { opacity: .5; } to { opacity: 1; } }
+
+/* ── Polish (S8) ──────────────────────────────────────────────────────── */
+/* Numbers that change never jitter. */
+.price-big, .balance-amount, .balance-sub b, .ring-pct, .spot-card-price b, .tx-main b, .kv dd, .receipt span,
+.pin-digits span, .session-tile, .time-chip, .breakdown dd, .badge, .tab-badge, .week-chart text { font-variant-numeric: tabular-nums; }
+/* Destructive = red-tinted, not a loud red block. */
+.btn-danger { background: var(--danger-tint); color: var(--danger); box-shadow: inset 0 0 0 1.5px rgba(214, 52, 44, .35); }
+/* Star tap bounce */
+.star-input button.on svg { animation: pop 320ms var(--ease); }
+/* Skeletons for lazy screens */
+.skeleton { padding: 20px var(--gutter); }
+.sk { border-radius: var(--r-md); background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }

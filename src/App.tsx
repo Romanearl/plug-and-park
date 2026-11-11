@@ -32,8 +32,23 @@ const Apply = lazy(() => import('./screens/owner/Apply'))
 
 function Loading() {
   return (
-    <div className="screen-view loading-view" role="status" aria-label="Loading">
-      <span className="spinner dark" />
+    <div className="screen-view skeleton" role="status" aria-label="Loading">
+      <div className="sk" style={{ height: 52, borderRadius: 999 }} />
+      <div className="row" style={{ gap: 8, marginTop: 12 }}>
+        {[60, 70, 70, 90].map((w, i) => (
+          <div key={i} className="sk" style={{ height: 36, width: w, borderRadius: 999 }} />
+        ))}
+      </div>
+      <div className="sk" style={{ height: 220, marginTop: 20, borderRadius: 16 }} />
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="row" style={{ gap: 12, marginTop: 16 }}>
+          <div className="sk" style={{ width: 72, height: 72 }} />
+          <div style={{ flex: 1 }}>
+            <div className="sk" style={{ height: 16, width: '80%' }} />
+            <div className="sk" style={{ height: 12, width: '55%', marginTop: 8 }} />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -74,12 +74,12 @@ export function BookingStatus({ id }: { id: string }) {
         <button className="icon-btn" onClick={toBookings} aria-label="Back">
           <Icon name="back" />
         </button>
-        <h1 className="h2" style={{ flex: 1 }}>
-          Your booking
-        </h1>
       </div>
       <div className="scroll">
         <div className="page" style={{ paddingBottom: 28 }}>
+          <h1 className="h1" style={{ marginBottom: 16 }}>
+            Your booking
+          </h1>
           <ol className="stepper" aria-label="Booking progress">
             {STEPS.map((label, i) => {
               const state = failed === i ? 'failed' : i < current ? 'done' : i === current ? 'current' : 'todo'

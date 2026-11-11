@@ -1,7 +1,7 @@
 // Owner → Earnings (diagram 2: escrow → bill minus 18% commission + 3% gateway fee → net payout).
 // Every figure comes from src/lib/money.ts.
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BottomSheet } from '../../components/BottomSheet'
 import { TextField } from '../../components/Field'
 import { Icon } from '../../components/Icon'
@@ -61,7 +61,7 @@ export function Earnings() {
           <section className="balance-card" aria-label="Balance">
             <div className="balance-label">Available to withdraw</div>
             <div className="balance-amount" data-available={bal.available}>
-              {hk2(bal.available)}
+              <CountUp value={bal.available} />
             </div>
             <button className="btn btn-inverse block" style={{ marginTop: 14 }} onClick={() => setWithdrawing(true)}>
               Withdraw
@@ -346,4 +346,29 @@ function WithdrawSheet({ open, onClose, available, ownerId, phone, preferred }: 
       )}
     </BottomSheet>
   )
+}
+
+/** Animates the balance when it changes (~600 ms); jumps straight there with reduced motion. */
+function CountUp({ value }: { value: number }) {
+  const [shown, setShown] = useState(value)
+  const from = useRef(value)
+  useEffect(() => {
+    const start = from.current
+    from.current = value
+    if (start === value || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setShown(value)
+      return
+    }
+    const t0 = performance.now()
+    let raf = 0
+    const tick = (t: number) => {
+      const k = Math.min(1, (t - t0) / 600)
+      const eased = 1 - Math.pow(1 - k, 3)
+      setShown(Math.round((start + (value - start) * eased) * 100) / 100)
+      if (k < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [value])
+  return <>{hk2(shown)}</>
 }

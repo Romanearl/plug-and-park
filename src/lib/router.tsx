@@ -1,6 +1,6 @@
 // Tiny hash router. Hash routing (#/app/spot/3) survives a hard refresh on GitHub Pages.
 
-import { useEffect, useSyncExternalStore, type AnchorHTMLAttributes, type ReactNode } from 'react'
+import { useEffect, useMemo, useSyncExternalStore, type AnchorHTMLAttributes, type ReactNode } from 'react'
 
 function currentPath(): string {
   const raw = window.location.hash.replace(/^#/, '')
@@ -24,7 +24,12 @@ export function useQuery(): URLSearchParams {
   return new URLSearchParams(hash.split('?')[1] ?? '')
 }
 
+/** How the next screen should enter: pushed (slide from right), back (slide from left) or swapped (fade). */
+type NavKind = 'forward' | 'back' | 'fade'
+let nextKind: NavKind = 'back' // browser back/forward buttons fire hashchange without navigate()
+
 export function navigate(to: string, opts: { replace?: boolean } = {}) {
+  nextKind = opts.replace ? 'fade' : 'forward'
   const target = `#${to.startsWith('/') ? to : `/${to}`}`
   if (opts.replace) {
     const url = `${window.location.pathname}${window.location.search}${target}`
@@ -43,6 +48,7 @@ let depth = 0
 export function back(fallback = '/') {
   if (depth > 0) {
     depth--
+    nextKind = 'back'
     window.history.back()
   } else {
     navigate(fallback, { replace: true })
@@ -75,11 +81,29 @@ export function Router({ routes, fallback }: { routes: Route[]; fallback: (path:
     document.querySelectorAll<HTMLElement>('.scroll').forEach((el) => el.scrollTo({ top: 0 }))
   }, [path])
 
+  // Pick the transition once per path change, then fall back to "back" for browser buttons.
+  const kind = useMemo(() => {
+    const k = nextKind
+    nextKind = 'back'
+    return k
+  }, [path])
+
+  let content: ReactNode = null
   for (const r of routes) {
     const params = matchPath(r.path, path)
-    if (params) return <>{r.render(params)}</>
+    if (params) {
+      content = r.render(params)
+      break
+    }
   }
-  return <>{fallback(path)}</>
+  if (content === null) content = fallback(path)
+  // Keyed by path: each screen enters with a short slide/fade. It starts at 50% opacity, never 0,
+  // so there is no blank frame between screens.
+  return (
+    <div key={path} className={`route route-${kind}`}>
+      {content}
+    </div>
+  )
 }
 
 export function Link({ to, replace, onClick, ...rest }: { to: string; replace?: boolean } & AnchorHTMLAttributes<HTMLAnchorElement>) {

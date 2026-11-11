@@ -2,6 +2,7 @@
 // Scene depends on the property type; the photo index changes the viewpoint so a
 // carousel never repeats itself. Colours come from the design tokens.
 
+import { useState, useSyncExternalStore } from 'react'
 import type { Spot } from '../data/types'
 
 type Scene = 'garage' | 'driveway' | 'industrial' | 'carpark'
@@ -206,43 +207,109 @@ function Carpark({ v, car, bay }: { v: number; car: string; bay: number }) {
   )
 }
 
-export function SpotPhoto({
-  spot,
-  index = 0,
-  className,
-  rounded = 0,
-}: {
+// ── Real photos: public/photos/manifest.json maps spot ids to files (see public/photos/README.md) ──
+type Manifest = Record<string, string[]>
+let manifest: Manifest = {}
+let manifestLoaded = false
+const manifestListeners = new Set<() => void>()
+function loadManifest() {
+  if (manifestLoaded) return
+  manifestLoaded = true
+  fetch(`${import.meta.env.BASE_URL}photos/manifest.json`, { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((m: unknown) => {
+      if (m && typeof m === 'object') {
+        manifest = m as Manifest
+        manifestListeners.forEach((l) => l())
+      }
+    })
+    .catch(() => {
+      /* no manifest → illustrations only */
+    })
+}
+function useManifest(): Manifest {
+  return useSyncExternalStore(
+    (l) => {
+      manifestListeners.add(l)
+      loadManifest()
+      return () => {
+        manifestListeners.delete(l)
+      }
+    },
+    () => manifest,
+  )
+}
+
+export function SpotPhoto(props: {
   spot: Pick<Spot, 'id' | 'propertyType' | 'photoSeed' | 'title'> & { photos?: string[] }
   index?: number
   className?: string
   rounded?: number
 }) {
+  const { spot, index = 0, className, rounded = 0 } = props
+  const m = useManifest()
+  const [broken, setBroken] = useState<string | null>(null)
   const uploaded = spot.photos?.[index]
   if (uploaded && uploaded.startsWith('data:image/')) {
     return <img className={className} src={uploaded} alt={`Photo ${index + 1} of ${spot.title}`} style={{ objectFit: 'cover', borderRadius: rounded || undefined }} />
   }
+  const file = m[spot.id]?.[index]
+  if (file && broken !== file) {
+    return (
+      <img
+        className={className}
+        src={`${import.meta.env.BASE_URL}photos/${file}`}
+        alt={`Photo ${index + 1} of ${spot.title}`}
+        loading="lazy"
+        decoding="async"
+        onError={() => setBroken(file)}
+        style={{ objectFit: 'cover', borderRadius: rounded || undefined, background: 'var(--surface)' }}
+        data-photo={file}
+      />
+    )
+  }
+  return <Illustration spot={spot} index={index} className={className} rounded={rounded} />
+}
+
+function Illustration({
+  spot,
+  index,
+  className,
+  rounded,
+}: {
+  spot: Pick<Spot, 'id' | 'propertyType' | 'photoSeed' | 'title'>
+  index: number
+  className?: string
+  rounded: number
+}) {
   const scene = sceneFor(spot)
   const v = (index + spot.photoSeed) % 3
   const car = CAR_COLOURS[(spot.photoSeed + index) % CAR_COLOURS.length]
-  const clip = `sp-clip-${spot.id}-${index}-${rounded}`
+  const uid = `${spot.id}-${index}-${rounded}`
   return (
-    <svg
-      className={className}
-      viewBox="0 0 390 260"
-      preserveAspectRatio="xMidYMid slice"
-      role="img"
-      aria-label={`Illustration ${index + 1} of ${spot.title}`}
-    >
+    <svg className={className} viewBox="0 0 390 260" preserveAspectRatio="xMidYMid slice" role="img" aria-label={`Illustration ${index + 1} of ${spot.title}`}>
       <defs>
-        <clipPath id={clip}>
+        <clipPath id={`sp-clip-${uid}`}>
           <rect width="390" height="260" rx={rounded} />
         </clipPath>
+        {/* Soft light from the top + darker floor edge = depth */}
+        <linearGradient id={`sp-light-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity={scene === 'driveway' ? 0 : 0.22} />
+          <stop offset="0.55" stopColor="#fff" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.16" />
+        </linearGradient>
+        <radialGradient id={`sp-vig-${uid}`} cx="50%" cy="45%" r="75%">
+          <stop offset="0.6" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.18" />
+        </radialGradient>
       </defs>
-      <g clipPath={`url(#${clip})`}>
+      <g clipPath={`url(#sp-clip-${uid})`}>
         {scene === 'garage' && <Garage v={v} car={car} />}
         {scene === 'driveway' && <Driveway v={v} car={car} />}
         {scene === 'industrial' && <Industrial v={v} car={car} />}
         {scene === 'carpark' && <Carpark v={v} car={car} bay={12 + spot.photoSeed * 7} />}
+        <rect width="390" height="260" fill={`url(#sp-light-${uid})`} />
+        <rect width="390" height="260" fill={`url(#sp-vig-${uid})`} />
       </g>
     </svg>
   )

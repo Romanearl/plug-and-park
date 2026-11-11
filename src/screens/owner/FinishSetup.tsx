@@ -77,12 +77,12 @@ export function FinishSetup({ id }: { id: string }) {
         <button className="icon-btn" onClick={() => navigate('/owner', { replace: true })} aria-label="Back" disabled={busy}>
           <Icon name="back" />
         </button>
-        <h1 className="h2" style={{ flex: 1 }}>
-          Finish setup
-        </h1>
       </div>
       <div className="scroll">
         <div className="page stack" style={{ gap: 18, paddingBottom: 24 }}>
+          <h1 className="h1" style={{ marginBottom: 16 }}>
+            Finish setup
+          </h1>
           <div className="row" style={{ gap: 12 }}>
             <SpotPhoto spot={spot} className="spot-thumb" />
             <div style={{ minWidth: 0 }}>

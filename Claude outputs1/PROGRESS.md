@@ -9,7 +9,7 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: d52
 - [x] S4 Booking core — done 11 Nov (S4_REPORT.md)
 - [x] S5 Driver path — done 11 Nov (S5_REPORT.md)
 - [x] S6 Owner side — done 11 Nov (S6_REPORT.md)
-- [ ] S7 Onboarding + branches — IN PROGRESS: all screens built + committed (9f0c478); next: s7 checks, state sweep table, shots, report
+- [x] S7 Onboarding + branches — done 11 Nov (S7_REPORT.md)
 - [ ] S8 Visual polish
 - [ ] S9 Hardening — feature freeze
 - [ ] S10 Demo kit

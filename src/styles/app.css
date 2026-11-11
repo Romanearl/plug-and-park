@@ -913,3 +913,8 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
 .branch-list dt { font-weight: 700; }
 .branch-list dd { margin: 0; color: var(--muted); text-align: right; }
 .list-row > div > div:first-child, .tx-main > div > div:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* overflow: hidden boxes can still be scrolled by scrollIntoView/focus, which shifts the whole screen.
+   clip makes the frame layers unscrollable (only .scroll / sheet bodies scroll). */
+.screen, .app-body, .shell-body, .map-home, .screen-view { overflow: clip; }
+.screen-view { overflow: clip; }

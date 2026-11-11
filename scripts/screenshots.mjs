@@ -755,6 +755,158 @@ scenarios.push(
   },
 )
 
+// ── S7: onboarding + branches ──
+/** Adds a brand-new owner (no spots) to the DB and signs this window in as them. */
+async function newOwner(page) {
+  await page.evaluate(() => {
+    const db = JSON.parse(localStorage.getItem('pp.db'))
+    if (!db.users.some((u) => u.id === 'u_owner_new'))
+      db.users.push({ id: 'u_owner_new', role: 'owner', name: 'Ho Wing Sze', email: 'ho.wingsze@example.com', phone: '+852 9876 5432', passwordHash: 'x', verified: true, rating: 5, ratingCount: 0, createdAt: new Date().toISOString() })
+    localStorage.setItem('pp.db', JSON.stringify(db))
+    sessionStorage.setItem('pp.session.main', 'u_owner_new')
+  })
+  // A real page load (not a hash change) so the store reads the new session before the route guard runs.
+  await page.goto('about:blank')
+  await page.goto(BASE + '#/owner')
+  await page.getByRole('heading', { name: 'Hi, Wing Sze' }).waitFor()
+}
+const applyNext = (page) => page.getByRole('button', { name: /^(Next|Submit application|Resubmit application)$/ }).click()
+async function applyStep1(page) {
+  await page.getByRole('button', { name: 'List my charger' }).click()
+  await page.getByLabel('Title').fill('Ho family garage — Pak Tam Chung')
+  await page.getByLabel('Address').fill('Pak Tam Road, Sai Kung')
+  await page.getByLabel('District').selectOption('Sai Kung')
+  await page.getByRole('radio', { name: 'Village house' }).click()
+  await page.locator('.mini-map .leaflet-tile-loaded').first().waitFor({ timeout: 8000 }).catch(() => {})
+}
+async function applyStep2(page) {
+  await applyStep1(page)
+  await applyNext(page)
+  await page.getByRole('radio', { name: 'Type 2' }).click()
+  await page.getByRole('button', { name: 'Raise price' }).click()
+  for (const a of ['Covered', 'Gated', 'Quiet street']) await page.getByRole('button', { name: a, exact: true }).click()
+}
+async function applyStep3(page) {
+  await applyStep2(page)
+  await applyNext(page)
+  await page.getByRole('button', { name: 'Use sample photo' }).click()
+  await page.getByRole('button', { name: 'Use sample photo' }).click()
+  await page.getByText('I confirm I have the right').click()
+}
+async function submitApp(page) {
+  await applyStep3(page)
+  await applyNext(page)
+  await page.getByText('Application received').waitFor()
+  return page.evaluate(() => JSON.parse(localStorage.getItem('pp.db')).spots.find((s) => s.ownerId === 'u_owner_new').id)
+}
+async function platform(page, spotId, action) {
+  await openDemoSheet(page)
+  const sheet = page.getByRole('dialog', { name: 'Demo controls' })
+  await sheet.locator(`[data-admin-spot="${spotId}"]`).getByRole('button', { name: action }).click()
+  await sheet.getByRole('button', { name: 'Close' }).click()
+}
+async function approvedNewSpot(page) {
+  const id = await submitApp(page)
+  await page.getByRole('button', { name: 'Back to home' }).click()
+  await platform(page, id, 'Approve')
+  await page.getByText('You’re approved — one last step').waitFor()
+  return id
+}
+
+scenarios.push(
+  { session: 'S7', file: '01-new-owner-welcome', route: '#/', setup: newOwner },
+  { session: 'S7', file: '02-apply-step1', route: '#/', setup: async (page) => { await newOwner(page); await applyStep1(page); await page.waitForTimeout(600) } },
+  {
+    session: 'S7', file: '03-apply-step1-errors', route: '#/',
+    setup: async (page) => {
+      await newOwner(page)
+      await page.getByRole('button', { name: 'List my charger' }).click()
+      await page.getByLabel('Title').fill('Bay')
+      await applyNext(page)
+      await page.locator('.field-error').first().waitFor()
+    },
+  },
+  { session: 'S7', file: '04-apply-step2', route: '#/', setup: async (page) => { await newOwner(page); await applyStep2(page) } },
+  {
+    session: 'S7', file: '05-apply-step3-photos', route: '#/',
+    setup: async (page) => {
+      await newOwner(page)
+      await applyStep3(page)
+      await page.locator('.apply .scroll').evaluate((el) => el.scrollTo(0, 0))
+    },
+  },
+  { session: 'S7', file: '06-application-received', route: '#/', setup: async (page) => { await newOwner(page); await submitApp(page) } },
+  {
+    session: 'S7', file: '07-demo-sheet-platform-actions', route: '#/',
+    setup: async (page) => {
+      await newOwner(page)
+      await submitApp(page)
+      await page.getByRole('button', { name: 'Back to home' }).click()
+      await openDemoSheet(page)
+      await page.getByText('Platform (admin) actions').evaluate((el) => el.scrollIntoView({ block: 'start' }))
+    },
+  },
+  {
+    session: 'S7', file: '08-changes-requested-card', route: '#/',
+    setup: async (page) => {
+      await newOwner(page)
+      const id = await submitApp(page)
+      await page.getByRole('button', { name: 'Back to home' }).click()
+      await platform(page, id, 'Request changes')
+      await page.getByText('Please add a clearer photo of the charger').waitFor()
+      await page.locator('.notify-toast').waitFor({ state: 'detached', timeout: 7000 })
+    },
+  },
+  {
+    session: 'S7', file: '09-finish-setup', route: '#/',
+    setup: async (page) => {
+      await newOwner(page)
+      await approvedNewSpot(page)
+      await page.getByRole('button', { name: 'Finish setup' }).click()
+      await page.getByLabel('Gate PIN (4 digits)').fill('2468')
+      await page.getByLabel('Access instructions').fill('Blue roller door, bay on the left.')
+    },
+  },
+  {
+    session: 'S7', file: '10-go-live-toast-my-spots', route: '#/',
+    setup: async (page) => {
+      await newOwner(page)
+      await approvedNewSpot(page)
+      await page.getByRole('button', { name: 'Finish setup' }).click()
+      await page.getByLabel('Gate PIN (4 digits)').fill('2468')
+      await page.getByLabel('Access instructions').fill('Blue roller door, bay on the left.')
+      await page.getByRole('button', { name: 'Go live' }).click()
+      await page.getByText('Your charger is live').waitFor()
+    },
+  },
+  {
+    session: 'S7', file: '11-driver-map-new-pin', route: '#/app', init: asDriver,
+    setup: async (page) => {
+      await page.evaluate(() => {
+        const db = JSON.parse(localStorage.getItem('pp.db'))
+        const src = db.spots.find((s) => s.id === 'sp_saikung_1')
+        db.spots.push({ ...src, id: 'sp_new_live', ownerId: 'u_owner_demo', title: 'Ho family garage — Pak Tam Chung', address: 'Pak Tam Road, Sai Kung', lat: 22.394, lng: 114.318, pricePerHour: 26, rating: 5, reviewsCount: 0, photoSeed: 12, reviewStatus: 'approved', active: true })
+        localStorage.setItem('pp.db', JSON.stringify(db))
+      })
+      await page.reload()
+      await waitForMap(page)
+      await tapPin(page, 'sp_new_live')
+      await page.locator('.spot-preview').waitFor()
+      await page.waitForTimeout(1500)
+    },
+  },
+  {
+    session: 'S7', file: '12-no-branch-section', route: '#/app', init: asDriver,
+    setup: async (page) => {
+      await openDemoSheet(page)
+      await page.getByText('Show a “No” branch').evaluate((el) => el.scrollIntoView({ block: 'start' }))
+    },
+  },
+  { session: 'S7', file: '13-error-booking-not-found', route: '#/app/booking/nope', init: asDriver },
+  { session: 'S7', file: '14-error-owner-spot-not-found', route: '#/owner/setup/nope', init: asOwner },
+  { session: 'S7', file: '15-empty-past-bookings', route: '#/app/bookings', init: asDriver, setup: async (page) => page.getByRole('tab', { name: 'Upcoming' }).click() },
+)
+
 async function fillRegistration(page, email) {
   await page.getByLabel('Full name').fill('Ho Ka Yan')
   await page.getByLabel('Email').fill(email)

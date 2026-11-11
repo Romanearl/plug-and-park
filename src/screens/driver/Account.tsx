@@ -75,8 +75,8 @@ export function Account() {
             className="btn btn-secondary block"
             style={{ marginTop: 28 }}
             onClick={() => {
-              signOut()
               navigate('/', { replace: true })
+              signOut()
             }}
           >
             Sign out

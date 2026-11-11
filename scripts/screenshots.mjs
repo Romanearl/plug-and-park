@@ -163,6 +163,7 @@ const scenarios = [
       await registerNewDriver(page)
       await page.keyboard.type('123456')
       await page.waitForURL(/#\/app$/)
+      await page.goto(BASE + '#/app/account') // S3: name shown on Account
       await page.getByText('Ho Ka Yan').waitFor()
     },
   },
@@ -284,7 +285,7 @@ scenarios.push(
     init: asDriver,
     setup: async (page) => {
       await waitForMap(page)
-      await tapPin(page, 'sp_saikung_1')
+      await tapPin(page, 'sp_shatin_1')
       await page.locator('.spot-preview').waitFor()
       await page.waitForTimeout(1200)
     },

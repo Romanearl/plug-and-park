@@ -580,6 +580,8 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
   display: flex; align-items: center; gap: 8px; margin: 10px var(--gutter) 0; padding: 10px 14px;
   border-radius: var(--r-md); background: var(--warning-tint); color: var(--warning); font-size: 14px; font-weight: 600;
 }
+.snap-body .map-banner { margin: 0 0 8px;
+}
 
 /* Three-snap sheet */
 .snap-sheet {
@@ -669,3 +671,4 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
 
 /* Mute OSM tiles toward the light, low-contrast "Positron" look. */
 .map .leaflet-tile-pane { filter: grayscale(0.85) brightness(1.06) contrast(0.88); }
+.map-attribution.hidden { display: none; }

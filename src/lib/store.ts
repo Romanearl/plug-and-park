@@ -9,6 +9,7 @@
 import { useSyncExternalStore } from 'react'
 import type { DB, User } from '../data/types'
 import { createSeed, DB_VERSION } from '../data/seed'
+import { navigate } from './router'
 
 const DB_KEY = 'pp.db'
 const sessionKey = () => `pp.session.${window.name || 'main'}`
@@ -117,8 +118,9 @@ export function signOut() {
 
 /** Wipe everything back to the seed data, sign out and go to the landing page. */
 export function resetDemo() {
+  // Navigate first (synchronously), so route guards don't bounce the signed-out window to #/login.
+  navigate('/', { replace: true })
   db = createSeed()
   safeSet('local', DB_KEY, JSON.stringify(db))
   signOut()
-  window.location.hash = '#/'
 }

@@ -48,7 +48,8 @@ for (const [w, h] of [[520, 900], [1280, 720], [1440, 900]]) {
   await b.getByRole('button', { name: /Demo only/ }).click()
   await b.getByRole('button', { name: 'Sign in as driver' }).click()
   await b.waitForURL(/#\/app$/)
-  check('Demo sheet -> driver -> #/app shows name', await b.getByText('Chan Tai Man').isVisible())
+  await b.goto(BASE + '#/app/account') // S3: name shown on Account (#/app is the map now)
+  check('Demo sheet -> driver -> #/app shows name', await seen(b.getByText('Chan Tai Man')))
   await a.reload()
   check('Tab A still owner after B signed in as driver + reload', await a.getByText('Wong Mei Ling').isVisible())
 
@@ -69,17 +70,20 @@ for (const [w, h] of [[520, 900], [1280, 720], [1440, 900]]) {
   check('Reset -> tab A at #/ and signed out', await seen(a.getByText('Charge where')))
   await b.getByText('Chan Tai Man').waitFor({ timeout: 3000 }).catch(() => {})
   check('Reset in A -> tab B live-updates to seed data', await b.getByText('Chan Tai Man').isVisible())
-  check('Reset in A does not sign out tab B', (await b.getByText('Signed in as').count()) === 1)
+  check('Reset in A does not sign out tab B', b.url().endsWith('#/app/account') && (await seen(b.getByRole('heading', { name: 'Account' }))))
 
   // Sign out only affects this window
   await b.getByRole('button', { name: 'Sign out' }).click()
-  check('Sign out clears session', (await b.getByText('Signed in as').count()) === 0)
+  await b.goto(BASE + '#/app')
+  check('Sign out clears session', await seen(b.getByRole('heading', { name: 'Log in' })))
   await ctx.close()
 }
 
 // 3. Deep link hard refresh + 404 + back button fallback
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  // S3: #/owner is guarded, so the deep link needs an owner session in this window.
+  await ctx.addInitScript(() => sessionStorage.getItem('pp.session.main') || sessionStorage.setItem('pp.session.main', 'u_owner_demo'))
   const p = await ctx.newPage()
   const res = await p.goto(BASE + '#/owner')
   await p.reload()

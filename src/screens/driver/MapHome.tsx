@@ -150,7 +150,7 @@ export default function MapHome() {
         ))}
       </MapContainer>
 
-      <div className="map-attribution" dangerouslySetInnerHTML={{ __html: ATTRIBUTION }} />
+      <div className={cx('map-attribution', snap === 'full' && 'hidden')} dangerouslySetInnerHTML={{ __html: ATTRIBUTION }} />
 
       {/* Top overlay: search pill + filter chips */}
       <div className="map-top">
@@ -194,11 +194,6 @@ export default function MapHome() {
             Under $25
           </button>
         </div>
-        {tilesFailed && (
-          <div className="map-banner" role="status">
-            <Icon name="info" size={18} /> Map unavailable — showing list
-          </div>
-        )}
       </div>
 
       <SnapSheet snap={snap} onSnap={setSnap} onHeight={setSheetPx} label={selected ? selected.title : 'Chargers'}>
@@ -206,6 +201,11 @@ export default function MapHome() {
           <SpotPreview spot={selected} now={now} onClose={deselect} />
         ) : (
           <>
+            {tilesFailed && (
+              <div className="map-banner" role="status">
+                <Icon name="info" size={18} /> Map unavailable — showing list
+              </div>
+            )}
             <div className="sheet-title-row">
               <h2 className="h2" aria-live="polite">
                 {count === 1 ? '1 charger nearby' : `${count} chargers nearby`}

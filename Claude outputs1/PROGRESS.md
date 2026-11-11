@@ -5,7 +5,7 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 160
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599
 - [x] S2 Auth — done 11 Nov, commit 1607599
-- [ ] S3 Discovery — IN PROGRESS: starting (no S3 code existed before S3_TASK.md, so the gap pass = build all of it)
+- [ ] S3 Discovery — IN PROGRESS: all code + checks written; fixing last check failures (see HANDOFF.md)
 - [ ] S4 Booking core
 - [ ] S5 Driver path
 - [ ] S6 Owner side

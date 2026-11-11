@@ -9,7 +9,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { chromium } from 'playwright'
+import playwright, { chromium } from 'playwright'
 import { BASE, ROOT, build, startPreview } from './lib/server.mjs'
 
 const OUT_ROOT = path.join(ROOT, 'Claude outputs1', 'screenshots')
@@ -473,15 +473,15 @@ async function seedBooking(page, patch = {}, startedAgoMs) {
 const PAID = { status: 'paid', paymentLast4: '4242', pin: '7350', paidAt: new Date().toISOString() }
 async function openPay(page) {
   const id = await seedBooking(page)
-  await page.goto(BASE + `#/app/pay/${id}`)
-  await page.reload()
+  // A new query string forces a full load, so the in-memory DB picks up the data written above.
+  await page.goto(BASE + `?r=${Date.now()}#/app/pay/${id}`)
   await page.getByLabel('Card number', { exact: true }).waitFor()
   return id
 }
 async function toSession(page, agoMs, waitRing = true) {
   const id = await seedBooking(page, { ...PAID, qrPayload: 'x', status: 'active' }, agoMs)
-  await page.goto(BASE + `#/app/session/${id}`)
-  await page.reload()
+  // A new query string forces a full load, so the in-memory DB picks up the data written above.
+  await page.goto(BASE + `?r=${Date.now()}#/app/session/${id}`)
   if (waitRing) await page.locator('.ring-wrap').waitFor()
   return id
 }
@@ -555,8 +555,8 @@ scenarios.push(
     session: 'S5', file: '10-rate-empty', route: '#/app/bookings', init: asDriver,
     setup: async (page) => {
       const id = await completedBooking(page)
-      await page.goto(BASE + `#/app/rate/${id}`)
-      await page.reload()
+      // A new query string forces a full load, so the in-memory DB picks up the data written above.
+      await page.goto(BASE + `?r=${Date.now()}#/app/rate/${id}`)
       await page.getByText('How was your charge?').waitFor()
     },
   },
@@ -564,8 +564,8 @@ scenarios.push(
     session: 'S5', file: '11-rate-filled', route: '#/app/bookings', init: asDriver,
     setup: async (page) => {
       const id = await completedBooking(page)
-      await page.goto(BASE + `#/app/rate/${id}`)
-      await page.reload()
+      // A new query string forces a full load, so the in-memory DB picks up the data written above.
+      await page.goto(BASE + `?r=${Date.now()}#/app/rate/${id}`)
       await page.getByRole('radio', { name: '5 stars' }).click()
       await page.getByRole('button', { name: 'Fast charging' }).click()
       await page.getByRole('button', { name: 'Helpful owner' }).click()
@@ -576,8 +576,8 @@ scenarios.push(
     session: 'S5', file: '12-rate-thank-you', route: '#/app/bookings', init: asDriver,
     setup: async (page) => {
       const id = await completedBooking(page)
-      await page.goto(BASE + `#/app/rate/${id}`)
-      await page.reload()
+      // A new query string forces a full load, so the in-memory DB picks up the data written above.
+      await page.goto(BASE + `?r=${Date.now()}#/app/rate/${id}`)
       await page.getByRole('radio', { name: '5 stars' }).click()
       await page.getByLabel('Tell other drivers more (optional)').fill('Guard showed me the bay, full in under an hour. Will be back!')
       await page.getByRole('button', { name: 'Submit review' }).click()
@@ -621,8 +621,8 @@ scenarios.push(
     session: 'S5', file: '16-spot-details-new-review', route: '#/app/bookings', init: asDriver,
     setup: async (page) => {
       const id = await completedBooking(page)
-      await page.goto(BASE + `#/app/rate/${id}`)
-      await page.reload()
+      // A new query string forces a full load, so the in-memory DB picks up the data written above.
+      await page.goto(BASE + `?r=${Date.now()}#/app/rate/${id}`)
       await page.getByRole('radio', { name: '5 stars' }).click()
       await page.getByRole('button', { name: 'Fast charging' }).click()
       await page.getByLabel('Tell other drivers more (optional)').fill('Guard showed me the bay, full in under an hour. Will be back!')
@@ -907,6 +907,44 @@ scenarios.push(
   { session: 'S7', file: '15-empty-past-bookings', route: '#/app/bookings', init: asDriver, setup: async (page) => page.getByRole('tab', { name: 'Upcoming' }).click() },
 )
 
+// ── S9: failure states, presenter sizes, WebKit main screens ──
+const blockFonts = (context) => context.route(/fonts.(googleapis|gstatic).com/, (r) => r.abort())
+const blockStorage = (context) =>
+  context.addInitScript(() => {
+    const deny = () => {
+      throw new DOMException('blocked', 'SecurityError')
+    }
+    Object.defineProperty(window, 'localStorage', { get: deny })
+    Object.defineProperty(window, 'sessionStorage', { get: deny })
+  })
+const presenterReady = async (page) => {
+  await page.frameLocator('iframe[name="driver"]').locator('.pin').first().waitFor({ timeout: 15000 })
+  await page.frameLocator('iframe[name="owner"]').getByRole('heading', { name: 'Hi, Mei Ling' }).waitFor()
+  await page.waitForTimeout(800)
+}
+scenarios.push(
+  { session: 'S9', file: '01-tiles-blocked', route: '#/app', init: async (c) => { await asDriver(c); await blockTiles(c) }, setup: (p) => p.getByText('Map unavailable — showing list').waitFor({ timeout: 10000 }) },
+  { session: 'S9', file: '02-fonts-blocked-landing', route: '#/', init: blockFonts },
+  { session: 'S9', file: '03-fonts-blocked-details', route: '#/app/spot/sp_kwuntong_1', init: async (c) => { await asDriver(c); await blockFonts(c) } },
+  {
+    session: 'S9', file: '04-storage-blocked-notice', route: '#/', init: blockStorage,
+    setup: async (page) => {
+      await page.getByRole('button', { name: /Demo only/ }).click()
+      await page.getByRole('button', { name: 'Sign in as driver' }).click()
+      await page.locator('.spot-card').first().waitFor({ timeout: 10000 })
+      await page.getByText(/Storage is blocked/).waitFor()
+    },
+  },
+  { session: 'S9', file: '05-presenter-1280x720', device: desktop(1280, 720), route: '#/presenter', setup: presenterReady },
+  { session: 'S9', file: '06-presenter-1920x1080', device: desktop(1920, 1080), route: '#/presenter', setup: presenterReady },
+  { session: 'S9', file: '07-webkit-landing', browser: 'webkit', route: '#/' },
+  { session: 'S9', file: '08-webkit-map', browser: 'webkit', route: '#/app', init: asDriver, setup: waitForMap },
+  { session: 'S9', file: '09-webkit-spot-details', browser: 'webkit', route: '#/app/spot/sp_kwuntong_1', init: asDriver },
+  { session: 'S9', file: '10-webkit-payment', browser: 'webkit', route: '#/app/bookings', init: asDriver, setup: async (page) => { await openPay(page); await page.getByRole('button', { name: 'Use test card' }).click() } },
+  { session: 'S9', file: '11-webkit-session', browser: 'webkit', route: '#/app/bookings', init: asDriver, setup: (page) => toSession(page, 12_000), settle: 0 },
+  { session: 'S9', file: '12-webkit-owner-earnings', browser: 'webkit', route: '#/owner/earnings', init: asOwner },
+)
+
 async function fillRegistration(page, email) {
   await page.getByLabel('Full name').fill('Ho Ka Yan')
   await page.getByLabel('Email').fill(email)
@@ -948,6 +986,7 @@ async function main() {
   const problems = []
   let count = 0
   let browser
+  const others = {}
   try {
     browser = await chromium.launch()
 
@@ -958,7 +997,10 @@ async function main() {
     }
 
     for (const sc of todo) {
-      const context = await browser.newContext({ ...(sc.device ?? PHONE), reducedMotion: 'reduce' })
+      // Optional per-scenario engine (S9 shoots WebKit versions of the main screens).
+      const engine = sc.browser ? (others[sc.browser] ??= await playwright[sc.browser].launch()) : browser
+      const device = sc.browser === 'firefox' ? { viewport: PHONE.viewport } : (sc.device ?? PHONE)
+      const context = await engine.newContext({ ...device, reducedMotion: 'reduce' })
       if (sc.init) await sc.init(context)
       const page = await context.newPage()
       const tag = `${sc.session}/${sc.file}`
@@ -985,6 +1027,7 @@ async function main() {
     }
   } finally {
     await browser?.close()
+    for (const b of Object.values(others)) await b.close()
     cleanup()
   }
 

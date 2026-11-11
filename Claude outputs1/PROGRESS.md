@@ -11,7 +11,7 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 9cd
 - [x] S6 Owner side — done 11 Nov (S6_REPORT.md)
 - [x] S7 Onboarding + branches — done 11 Nov (S7_REPORT.md)
 - [x] S8 Visual polish — done 11 Nov (S8_REPORT.md)
-- [ ] S9 Hardening — IN PROGRESS: smoke.mjs passes; next: 5× runs, cross-browser, s9 drills, live run, clean clone, tag
+- [x] S9 Hardening — done 11 Nov (S9_REPORT.md) — FEATURE FREEZE, tag v1.0-freeze
 - [ ] S10 Demo kit
 
 ## Review fixes done

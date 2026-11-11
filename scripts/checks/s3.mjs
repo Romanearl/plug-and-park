@@ -272,7 +272,8 @@ const center = (p) => p.evaluate(() => {
   await p.waitForTimeout(600)
   check('Rating link scrolls to reviews', await p.locator('#reviews').evaluate((el) => { const r = el.getBoundingClientRect(); return r.top < window.innerHeight && r.bottom > 0 }))
   await p.getByRole('button', { name: 'Request booking' }).click()
-  check('Request booking → "next build" sheet', await seen(p.getByText('Booking opens in the next build.')))
+  // S4 replaced the placeholder sheet with the real booking sheet.
+  check('Request booking → booking sheet', await seen(p.getByRole('dialog', { name: 'Request booking' })))
   await p.goto(BASE + '#/app/spot/nope')
   check('Unknown id → "no longer listed"', await seen(p.getByText('This charger is no longer listed')))
   await p.getByRole('button', { name: 'Back to map' }).click()

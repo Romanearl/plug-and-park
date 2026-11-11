@@ -39,7 +39,7 @@ for (const [w, h] of [[520, 900], [1280, 720], [1440, 900]]) {
   await a.getByRole('button', { name: /Demo only/ }).click()
   await a.getByRole('button', { name: 'Sign in as charger owner' }).click()
   await a.waitForURL(/#\/owner$/)
-  check('Demo sheet -> owner -> #/owner shows name', await seen(a.getByRole('heading', { name: 'Hi, Mei Ling' })) // S4: owner home is Requests)
+  check('Demo sheet -> owner -> #/owner shows name', await seen(a.getByRole('heading', { name: 'Hi, Mei Ling' })))
 
   // Driver sign-in in a second tab
   const b = await ctx.newPage()

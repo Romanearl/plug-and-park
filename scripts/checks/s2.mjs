@@ -166,7 +166,7 @@ const cont = (p) => p.getByRole('button', { name: 'Continue' })
     document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }))
   })
   await p.waitForURL(/#\/owner$/, { timeout: 5000 }).catch(() => {})
-  check('Paste fills all boxes, auto-submits → owner lands on #/owner', p.url().endsWith('#/owner') && (await seen(p.getByRole('heading', { name: 'Hi, Mei Ling' }))) // S4: owner home is Requests)
+  check('Paste fills all boxes, auto-submits → owner lands on #/owner', p.url().endsWith('#/owner') && (await seen(p.getByRole('heading', { name: 'Hi, Mei Ling' }))))
   await ctx.close()
 }
 
@@ -197,6 +197,7 @@ const cont = (p) => p.getByRole('button', { name: 'Continue' })
   await p2.goto(BASE + '#/')
   await p2.getByRole('button', { name: /Demo only/ }).click()
   await p2.getByRole('button', { name: 'Sign in as charger owner' }).click()
+  await p2.goto(BASE + '#/owner/account') // S4: owner Sign out lives on the Account tab
   await p2.getByRole('button', { name: 'Sign out' }).click()
   await p.goto(BASE + '#/app/account')
   await p.reload()

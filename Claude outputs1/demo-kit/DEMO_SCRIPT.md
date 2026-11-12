@@ -3,7 +3,7 @@
 **Setup:** the presenter view shows two phones side by side: the **EV driver** on the left and the **charger owner** on the right. Everything you tap on one phone shows up on the other within a second.
 
 **Live link:** https://romanearl.github.io/plug-and-park/ · **Presenter view:** https://romanearl.github.io/plug-and-park/#/presenter
-**Backup video:** `backup-demo.webm` (2 min 36 s) in this folder.
+**Backup video:** `backup-demo.webm` (2 min 48 s) in this folder.
 
 ## Before you start (5 minutes before your slot)
 - [ ] Open the **presenter view** link above in Chrome on the classroom laptop, then press **F11** for full screen.

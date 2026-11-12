@@ -22,8 +22,8 @@
 
 ## S10 — the demo kit (`Claude outputs1/demo-kit/`)
 - `DEMO_SCRIPT.md`: a 4–5 minute click-by-click table (time · click · what the audience sees · what to say · diagram step), a "Before you start" checklist, an "If something goes wrong" table and a 2-minute version. The click path is the one the smoke test and the backup recording perform.
-- `backup-demo.webm`: presenter view at 1280×720, **2 min 36 s**, paced for viewers, with tap dots (injected for the recording only). It shows both "No" branches, the commission breakdown and the withdraw.
-- `driver-flow.webm`: single phone, 390×844, **1 min 19 s**.
+- `backup-demo.webm`: presenter view at 1280×720, **2 min 48 s**, paced for viewers, with tap dots (injected for the recording only). It shows the district search, both "No" branches, the commission breakdown, the availability scheduler and the withdraw.
+- `driver-flow.webm`: single phone, 390×844, **1 min 16 s**.
 - Frames were extracted at 7 points and checked: nothing blank, cut off or caught mid-transition.
 - `screens/phone/` (25 screens in flow order), `screens/framed/` (the same 25 in a bezel on a transparent background), `screens/flow/` (driver, owner and onboarding flow images with numbered captions), and `SCREENS.md` (file → screen → diagram step → caption).
 - `HOW_IT_WORKS.md`: simulated vs real, how each part would work in a real product, the business numbers with a worked example, likely questions with answers, and credits.

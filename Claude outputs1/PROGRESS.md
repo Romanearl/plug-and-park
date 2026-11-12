@@ -1,6 +1,6 @@
-# Progress            Last updated: Thu 12 Nov 2026 12:20 HKT
+# Progress            Last updated: Fri 13 Nov 2026 00:56 HKT
 Repo: https://github.com/Romanearl/plug-and-park (public)
-Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 8519638 (RF-10)
+Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: b3dde82 (RF-15)
 
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599
@@ -18,7 +18,8 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 851
 - Tag: **v1.0-freeze** → commit d5bb4d7 (pushed, unchanged)
 - Tag: **v1.1-demo** → commit f4356f3 (pushed; the only later commit corrects a timestamp in this file)
 - Live URL: https://romanearl.github.io/plug-and-park/
-- Last green smoke test on the live site: Thu 12 Nov 2026 12:20 HKT (Chromium, new demo path + presenter, against commit 8519638)
+- Tag: **v1.2-demo** → the commit that adds this line and RF11-15_REPORT.md (pushed)
+- Last green smoke test on the live site: Fri 13 Nov 2026 00:56 HKT (Chromium, demo path + presenter, against commit b3dde82, new colours)
 - All sessions done (S1–S10). From now on: only REVIEW_FIXES.md bug fixes.
 
 ## Review fixes done
@@ -33,7 +34,10 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 851
 - RF-9 (021fd1a) — HOW_IT_WORKS.md: "Why 18%?" now cites the proposal's 15–20% range; the supply claim is softened with "(team: confirm against the competitors in our report)".
 - RF-10 (4cc9d17, 8519638 + this commit) — `npm run check`: 9/9 files pass (s2 62, s3 73, s4 59, s5 65, s6 43, s7 53, s8 24, s9 18; s1 pass). `npm run smoke`: Chromium, WebKit and Firefox pass locally; Chromium passes against the live URL. `node scripts/demo-kit.mjs` re-run: backup-demo.webm (2 min 48 s), driver-flow.webm (1 min 16 s), 25 phone + 25 framed screens, 3 flow images. S3/S4/S5 screenshots re-shot. Deploy run for 8519638 green.
 - RF-11 — DEMO_SCRIPT.md 3:55 row: new "what to say" line (also in the short version), flow cell now "Proposal: availability scheduler". README.md and SCREENS.md link only to demo-kit images, which are all regenerated (again in RF-15).
+- RF-12 (962ea2b) — overlapping pins merge into group pins ("2 · $23+": count and lowest price); a tap zooms to separate price pins; selected spot keeps its own pin. Opening map: 6 pins for 12 chargers. 12 new checks in s3.mjs. Label is shorter than the reviewer's example because the wide one failed the two-tap rule (see the report).
 - RF-13 — superseded by RF-15.
+- RF-14 (ef21ee2) — new colour system: navy base, sky blue = selected/tappable, mint = live; dark map (same tiles, new filter) with "Map style: Dark / Light" in the demo sheet; wordmark navy on blue, icons regenerated; `scripts/checks/contrast.mjs` (61 checks) added to `npm run check`. Before/after pairs in screenshots/RF14/.
+- RF-15 (b3dde82 + this commit) — `npm run check` 10/10 files; smoke passes in Chromium, WebKit, Firefox locally and in Chromium on the live URL; every session re-shot (107 + 107 in S8/); demo kit regenerated (backup-demo.webm 2 min 48 s, driver-flow.webm 1 min 16 s, 25 + 25 screens, 3 flows, navy QR slide); DEMO_SCRIPT.md wording updated; report: RF11-15_REPORT.md.
 
 ## Notes from the RF-4…RF-10 run (12 Nov)
 - The spot page (Spots → a bay) has no tab bar, so the demo script goes back with ← before tapping Earnings.
@@ -43,6 +47,13 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 851
 - Smoke test changes: suggestions are read with `evaluate` because Playwright's `allTextContents()` crashes its Firefox page on that sheet (the app itself is fine in Firefox); two Firefox-only deprecation notes raised inside Leaflet on a pin tap are ignored.
 - `scripts/rf-shots.mjs` is new: before/after map shots in `screenshots/RF/`.
 - Not re-run: the full `npm run shots` for S1, S2 and S6–S9 (their screens didn't change, apart from the lighter map background where a map is visible).
+
+## Notes from the RF-11…RF-15 run (12 Nov)
+- Roman committed to README.md on GitHub (ddd7d1d, 057dbb6: "no changes allowed to sources or credits without prior approval") and said not to change it. It was merged (698a711) and not edited. Always fetch and merge before pushing.
+- Known contrast shortfall: --danger on --danger-tint is 4.19:1 (danger colours are frozen by RF-14). contrast.mjs prints it as KNOWN.
+- The QR code stays black on white (themed colours broke decoding in the s5 check).
+- Untracked files in "Claude outputs1/" that are not ours and were not committed: three Plug-and-Park-logos-*.pdf and "Claude outputs/CAES9920 2a 1 - scrambled.pptx". Never use `git add -A` on that folder.
+- Needs Roman: check the dark map on the classroom projector (fallback: Demo strip → Map style → Light).
 
 ## Skipped / needs a human
 - (none)

@@ -32,6 +32,8 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 851
 - RF-8 (de57bae) — DEMO_SCRIPT.md: district search → Kwun Tong at 0:15 (chips mentioned, not tapped), suggested 12:00, "Use declined card", new 15-second Spots → Hoi Bun Road → Availability row, total about 4:45, short version updated, diagram-3 line added. smoke.mjs and demo-kit.mjs follow the same path. Screen 05 renamed to `05-map-district-preview` (SCREENS.md updated).
 - RF-9 (021fd1a) — HOW_IT_WORKS.md: "Why 18%?" now cites the proposal's 15–20% range; the supply claim is softened with "(team: confirm against the competitors in our report)".
 - RF-10 (4cc9d17, 8519638 + this commit) — `npm run check`: 9/9 files pass (s2 62, s3 73, s4 59, s5 65, s6 43, s7 53, s8 24, s9 18; s1 pass). `npm run smoke`: Chromium, WebKit and Firefox pass locally; Chromium passes against the live URL. `node scripts/demo-kit.mjs` re-run: backup-demo.webm (2 min 48 s), driver-flow.webm (1 min 16 s), 25 phone + 25 framed screens, 3 flow images. S3/S4/S5 screenshots re-shot. Deploy run for 8519638 green.
+- RF-11 — DEMO_SCRIPT.md 3:55 row: new "what to say" line (also in the short version), flow cell now "Proposal: availability scheduler". README.md and SCREENS.md link only to demo-kit images, which are all regenerated (again in RF-15).
+- RF-13 — superseded by RF-15.
 
 ## Notes from the RF-4…RF-10 run (12 Nov)
 - The spot page (Spots → a bay) has no tab bar, so the demo script goes back with ← before tapping Earnings.

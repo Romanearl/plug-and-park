@@ -53,3 +53,114 @@ The proposal lists "filters based on district" and the owner's "availability sch
 
 ### RF-10 — Re-verify and regenerate
 After RF-4 to RF-9: run `npm run check` and `npm run smoke` (all three browsers), re-run `node scripts/demo-kit.mjs` so the videos, screens and flow images match the app again, push, and run the smoke test against the live URL. Leave the `v1.0-freeze` tag where it is and add a new tag `v1.1-demo` on the final commit. Record all of it in `PROGRESS.md`, then stop.
+
+---
+
+## Review of RF-4 to RF-10 — 12 Nov 2026: approved, with RF-11 to RF-13
+
+Checked `RF4-10_REPORT.md`, the new `DEMO_SCRIPT.md` and 5 screenshots (map default, presenter view, payment buttons, slot suggestions, district preview). All seven fixes are done as asked, and the deviations are accepted (extra tap before Withdraw, wider pan limits, the Firefox test workaround). The older S1, S2 and S6–S9 session screenshots don't need re-shooting.
+
+### RF-11 — Demo script wording (docs only)
+- **3:55 row, "What to say":** the "at work" line was the reviewer's mistake, since this bay is open every day. Replace it with: "Owners set the weekly hours when their bay is free, and block out the times they need it themselves." Use the same idea in the short version. Don't change the seed data.
+- **3:55 row, "Flow-diagram step":** availability isn't a step in diagram 3. Change the cell to "Proposal: availability scheduler".
+- Check that `README.md` and `SCREENS.md` only link to regenerated images (none with the old, darker map).
+
+### RF-12 — Overlapping pins on the all-Hong-Kong view
+After RF-4 the opening map sits at zoom 10, and four pairs of pins now overlap so that one price in each pair is partly hidden ($22/$20, $26/$32, $25/$23, $28/$30). This is the first thing the class sees on the driver phone.
+- When two or more pins would overlap on screen, **merge them into one group pin**: the same black pill, showing the count and the lowest price, for example "2 · from $23". Recompute on zoom, on pan end and when the filters change.
+- Tapping a group pin zooms the map to fit its members (zoom cap 15), where they show as separate price pins. A selected spot is always shown as its own pin.
+- The sheet's count and list are unchanged ("12 chargers nearby" stays 12).
+- Keep integer zoom levels. Don't move the spots' coordinates and don't change the tile provider.
+- Update the S3 checks: at every zoom level no two pins overlap, every spot is reachable from the map within two taps, and the demo path (district search → the $30 pin) is unchanged.
+- **If this isn't clean after one solid attempt, back it out, leave the map as it is now and say so in the report.** A working map with overlaps beats a clever one with a bug.
+
+### RF-13 — Superseded
+Don't do a separate re-verify after RF-12. Do RF-14 next; RF-15 is the single re-verify for RF-11, RF-12 and RF-14. Record RF-13 as "superseded by RF-15" in `PROGRESS.md`.
+
+---
+
+## New colour system — 12 Nov 2026 (Roman's decision): RF-14 and RF-15
+
+Roman has chosen a new colour scheme: a **navy base**, **sky blue** and **mint** as two accents, and a **dark map**. The layout, type, spacing and every flow stay exactly as they are. Only colours change. `CLAUDE.md` §6 (master copy) is already updated; sync the root copy first.
+
+### RF-14 — Apply the new colour system
+
+**The rule that decides every case:**
+- **Navy** is the base: text, primary buttons, large dark surfaces.
+- **Sky blue means "selected" or "tappable"**: the thing you chose, or a link.
+- **Mint means "live"**: energy, availability, status and money coming in.
+- Neither accent ever carries white text, and neither is used as text on a light background. Use the `-deep` variant for that.
+
+**1. Tokens** (`:root` in `src/styles/app.css`). Replace the old values; every colour in the app must come from a token.
+
+```css
+--ink: #102A43;  --ink-2: #1B3A57;  --ink-3: #2A4A68;   /* Midnight Navy; replaces pure black */
+--muted: #55657A;  --muted-2: #7C8A9A;                  /* muted-2 is for large or non-essential text only */
+--line: #E1E7ED;  --surface: #F4F7FA;  --surface-2: #E9EEF3;  --bg: #FFFFFF;
+
+--blue: #68A8E8;       /* fill for selected things — navy text on it (5.8:1) */
+--blue-deep: #2B66A8;  /* blue text, icons and focus rings on light backgrounds (5.9:1) */
+--blue-tint: #E8F1FC;
+--blue-ink: #102A43;
+
+--mint: #4EE4B6;       /* fill for live things — navy text on it (9.1:1); as-is on navy (9.1:1) */
+--mint-deep: #0A6B50;  /* mint-family text and icons on light backgrounds (6.5:1) */
+--mint-tint: #E3FBF3;
+
+--success: #0A6B50;  --success-tint: #E3FBF3;   /* success now belongs to the mint family */
+--danger: #D6342C;   --danger-tint: #FDECEA;    /* unchanged */
+--warning: #A35F00;  --warning-tint: #FFF4E0;   /* unchanged */
+```
+
+- Find hard-coded colours outside the token block (`#000`, `#fff` on accents, `#7399c6`, `#3e5f8a`, `#0e8345`, rgba blacks used as fills) and replace them with tokens. Illustrations may keep literal colours, but recolour them from this palette.
+- The **phone frame hardware stays black**: bezel, dynamic island, home indicator on light screens. The stage gradient stays as it is.
+
+**2. Navy base.** Everything that was black becomes navy through `--ink`: text, primary buttons, the landing screen, the charging session screen, the owner's balance card, toasts, the active state of switches. White text on navy stays white.
+
+**3. Sky blue = selected or tappable.**
+- Selected choices: filter chips, day chips, time slots, duration chips, role cards, segment toggles, the selected payout method. Fill `--blue`, text `--ink`. (These were black with white text.)
+- Tab bars: the active tab's icon and label in `--blue-deep`.
+- Links and text buttons: `--blue-deep`. Input focus border: `--blue-deep`.
+- The bottom sheet's handle: `--blue`.
+- Finished steps in the booking stepper and the onboarding progress bar: `--blue`.
+- The wordmark box stays `--blue`, but its text becomes `--ink` (white on sky blue is only 2.5:1). Regenerate the favicon and app icons to match. Roman is designing a final logo separately, so keep the wordmark in one component and the icons in one place, easy to swap later.
+- **Not blue:** primary buttons and switches (navy), anything about status, energy or money (mint).
+
+**4. Mint = live.**
+- **Map pins:** mint pill, navy price text, 1.5px navy border. Group pins from RF-12 use the same style. The **selected pin** is a white pill with navy text and a navy border, slightly larger, with a soft shadow.
+- **Availability and status:** "Open now", "Available", "Paid", "Completed", "Live", "Charging now" badges use `--mint-tint` with `--mint-deep` text on light screens, and `--mint` on navy.
+- **Charging session** (navy screen): the progress ring, the live dot and the battery figure accents in `--mint`.
+- **Progress bars** of any kind that show something happening now: `--mint`.
+- **Money coming in:**
+  - On the navy balance card, the amounts are `--mint`.
+  - On white, "You earn HK$23.70", the net amount in transaction rows and "You receive" in the breakdown are `--mint-deep`.
+  - In the weekly chart, today's bar is `--mint` with a 1px `--mint-deep` outline, the other bars `--surface-2`, and value labels `--ink`.
+- **Success moments:** the check circles ("You're booked!", "Approved!", review thanks, payout sent) are `--mint` with a navy check. The "Approved!" card background is `--mint-tint`.
+- **Landing illustration:** the charger pins and their glow in `--mint`, the featured pin `--mint` with a navy bolt.
+- **Never** mint or sky blue as text on white or on `--surface` (1.6:1 and 2.5:1).
+
+**5. Dark map.**
+- Keep the same tile provider. Change only the tile filter (`--map-filter`) so the map is dark: start from `grayscale(1) invert(1)` and tune brightness and contrast. If a plain dark grey looks off beside the navy UI, add a navy tint (for example a navy overlay pane with a blend mode), as long as tiles stay crisp.
+- Target: the map background is close to `--ink` but clearly lighter than the phone bezel; roads are visible; district and street names are readable when zoomed in; nothing on the map is as bright as a pin.
+- The map container's own background (seen while tiles load or fail) is navy, not light grey.
+- Top overlay on the map: the search pill and chips stay white with navy text; replace the white fade behind them with a navy fade or remove it. The attribution stays readable.
+- The mini map in owner onboarding uses the same dark style.
+- **Projector safety switch:** add "Map style: Dark / Light" to the demo sheet (default Dark). Light uses the current light filter. Store the choice in `localStorage` and sync it across windows like the rest of the demo state, so both phones in the presenter view switch together. Pins must look right on both styles (that's why they have a navy border).
+
+**6. Checks and evidence.**
+- Add `scripts/checks/contrast.mjs` to `npm run check`: it computes WCAG contrast for the token pairs used for text (ink on bg/surface/surface-2/blue/mint/blue-tint/mint-tint, white on ink/ink-2/ink-3, muted on bg/surface/surface-2, blue-deep and mint-deep on bg/surface and their tints, danger and warning on their tints) and fails under 4.5:1. `--muted-2` is exempt but must not be used for body text.
+- Add a check that no pin, badge or button renders white text on `--blue` or `--mint` (sample computed styles on the map, booking sheet, payment, owner requests and earnings screens).
+- Update existing checks that assert old colours or class names.
+- Save before/after pairs of these screens to `Claude outputs1/screenshots/RF14/`: landing, map (all pins), map with a selected pin, map in Light style, spot details, booking sheet with a slot chosen, booking approved, payment, QR + PIN, charging session, owner requests, owner earnings (top and breakdown), scheduler, presenter view 1280×720.
+- Self-review every "after" shot against the rule at the top of this item.
+
+**Don't change:** layout, copy, flows, data, the tile provider, the fonts, or the warning and danger colours.
+
+### RF-15 — Re-verify everything and regenerate the demo kit
+After RF-11, RF-12 and RF-14:
+1. `npm run typecheck`, `npm run build`, `npm run check` (all files), `npm run smoke` in Chromium, WebKit and Firefox.
+2. `npm run shots -- all`, so every session folder shows the new colours.
+3. Regenerate the demo kit (`node scripts/demo-kit.mjs`): both videos, 25 phone and 25 framed screens, three flow images, and the QR slide (navy background instead of black).
+4. Update wording that names a colour: `DEMO_SCRIPT.md` says "a blue ring" for charging, which is now mint; add a line to its "If something goes wrong" table: "The dark map is hard to see on the projector → Demo strip → Map style → Light". Update `README.md` images and `HOW_IT_WORKS.md` if they mention colours.
+5. Push, check the Actions run, smoke-test the live URL, tag `v1.2-demo`.
+6. Update `PROGRESS.md` and write `Claude outputs1/RF11-15_REPORT.md`. Under "Needs a human", ask Roman to check the dark map on the classroom projector. Then stop.

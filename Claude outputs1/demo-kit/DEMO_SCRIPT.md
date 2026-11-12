@@ -28,7 +28,7 @@
 | 2:35 | Driver: **I've arrived — start charging**. | "Verifying access…", then a blue ring counting up: battery %, kWh, time left, power. The owner sees **Charging now**. | "In the real product this data comes from the charger. The demo runs a 1-hour session in 25 seconds." (Talk over the wait.) | D1: Start charging, live data, state of charge |
 | 3:05 | Driver: **Rate your experience** → tap the **5th star** → **Fast charging** → **Submit review**. | "Thanks for your review!" | "Reviews feed the spot's rating, which builds trust for the next driver." | D1: Session complete → rate & review |
 | 3:25 | Owner: tap **Earnings** (bottom bar). Tap the top transaction (**Chan Tai Man**). | The breakdown: **HK$30.00 − Plug & Park fee (18%) HK$5.40 − Payment processing (3%) HK$0.90 = You receive HK$23.70**. | "This is our business model: the platform keeps 18%, the payment fee is 3%, and the owner keeps HK$23.70 for an hour of an idle bay." | D2: Escrow → bill minus commission + gateway fee |
-| 3:55 | Owner: tap **Spots** (bottom bar) → **Industrial building bay — Hoi Bun Road** → scroll down to **Availability**. Don't change anything. | The weekly schedule: one row per day with on/off switches and start/end times. | "Owners set weekly hours, so the bay is only bookable while they're at work." | D3: Set availability schedule |
+| 3:55 | Owner: tap **Spots** (bottom bar) → **Industrial building bay — Hoi Bun Road** → scroll down to **Availability**. Don't change anything. | The weekly schedule: one row per day with on/off switches and start/end times. | "Owners set the weekly hours when their bay is free, and block out the times they need it themselves." | Proposal: availability scheduler |
 | 4:10 | Owner: tap the round **←** (top left) → **Earnings** → **Withdraw** → **Withdraw HK$117.71**. | "HK$117.71 on its way — usually within minutes via FPS". A few seconds later the payout row turns **Paid**. | "Owners cash out to FPS or their bank." | D2: Net payout via bank/FPS |
 | 4:35 | Switch to the **QR code slide**. | "Try it now" + a big QR code. | "Scan it — the demo logins are in the blue 'Demo' strip at the top of the app." | — |
 
@@ -44,7 +44,7 @@
 3. Driver: **Pay HK$30** → **Use test card** → **Pay HK$30** → the QR code and PIN.
 4. Driver: **I've arrived — start charging**, then tap the blue **Demo** strip → **Skip charging to the end**.
 5. Owner: **Earnings** → tap the top transaction → the 18% + 3% breakdown.
-6. Owner: **Spots** → **Industrial building bay — Hoi Bun Road** → **Availability** (10 seconds: "owners set weekly hours").
+6. Owner: **Spots** → **Industrial building bay — Hoi Bun Road** → **Availability** (10 seconds: "owners set the weekly hours when their bay is free, and block out the times they need it themselves").
 7. The QR slide.
 
 ## If something goes wrong

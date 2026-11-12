@@ -97,7 +97,7 @@ Live URL: https://<user>.github.io/plug-and-park/      Last green deploy: <commi
 | Styling | Plain CSS with design tokens: `src/styles/app.css` (no Tailwind, no UI kit) |
 | Routing | Hash routing (`#/app/spot/3`). Either a tiny custom router in `src/lib/router.tsx` or `react-router-dom`'s `HashRouter`, but never browser-history routing, which breaks on GitHub Pages refresh |
 | State | `src/lib/store.ts`: `useSyncExternalStore` over `localStorage`, live-synced across windows (§7). No Redux. |
-| Map | Leaflet + react-leaflet, **Carto Positron** tiles (`https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png`, attribution "© OpenStreetMap contributors © CARTO"). No Google Maps, no API key. |
+| Map | Leaflet + react-leaflet with **OpenStreetMap standard tiles** (attribution "© OpenStreetMap contributors"), darkened with a CSS filter (`--map-filter`). CARTO tiles now need an API key, so they aren't used. No Google Maps, no API key. |
 | QR code | A small client-side QR library (e.g. `qrcode`) or an SVG generator. Must work offline. |
 | Screenshots / smoke tests | Playwright (dev dependency) |
 | Hosting | GitHub Pages via GitHub Actions; public repo `plug-and-park` |
@@ -151,30 +151,36 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
 ## 6. Design system
 
 ### Visual direction
-**Uber's layout language with a classic investment-bank blue accent.**
-- Black and white base, lots of white space, bold tight sans-serif headings.
-- A **full-bleed map** with **bottom sheets** sliding over it (snap points: peek, half, full).
-- **Pill buttons** 52px tall and full-width. Primary actions are black with white text.
-- The accent is a light "bank blue" (~#7399C6, inspired by the 1999–2020 Goldman Sachs logo). Use it for the selected pin, active states, highlights and the wordmark box. **Text on the blue is always black** (white on it is only 3:1).
-- Wordmark: "Plug &" / "Park" stacked in a **serif** (Libre Caslon Text), white on a blue square. Only the wordmark uses serif; everything else is Inter.
-- Landing / onboarding screens use a **black** background (Uber-style), and in-app screens use white.
+**Uber's layout language on a navy base, with two accents: sky blue and mint.** (Colour system changed on 12 Nov 2026; see RF-14 in `REVIEW_FIXES.md`.)
+- **Navy and white base**, lots of white space, bold tight sans-serif headings. Navy (`--ink`) replaces pure black everywhere except the phone frame hardware.
+- A **full-bleed dark map** with white **bottom sheets** sliding over it (snap points: peek, half, full).
+- **Pill buttons** 52px tall and full-width. Primary actions are navy with white text.
+- **Sky blue means "selected" or "tappable":** selected chips, slots and cards, the active tab, links, the sheet handle, finished steps, the wordmark box.
+- **Mint means "live":** map pins, availability and status badges, charging progress, success moments, money coming in.
+- **Neither accent carries white text, and neither is used as text on a light background.** Text on `--blue` or `--mint` is navy; accent-coloured text on white uses `--blue-deep` or `--mint-deep`.
+- Wordmark: "Plug &" / "Park" stacked in a **serif** (Libre Caslon Text), navy on a sky-blue square. Only the wordmark uses serif; everything else is Inter. Roman is designing a final logo separately, so keep it easy to swap.
+- Landing, the charging session and the owner's balance card use a **navy** background; other in-app screens use white.
 
 ### Tokens (source of truth: `:root` in `src/styles/app.css`)
 
 ```css
 :root {
-  --ink: #000000;  --ink-2: #1f1f1f;  --ink-3: #333333;
-  --muted: #6b6b6b;  --muted-2: #8f8f8f;
-  --line: #e8e8e8;  --surface: #f3f3f3;  --surface-2: #eeeeee;  --bg: #ffffff;
+  --ink: #102A43;  --ink-2: #1B3A57;  --ink-3: #2A4A68;   /* Midnight Navy */
+  --muted: #55657A;  --muted-2: #7C8A9A;                  /* muted-2: large or non-essential text only */
+  --line: #E1E7ED;  --surface: #F4F7FA;  --surface-2: #E9EEF3;  --bg: #FFFFFF;
 
-  --blue: #7399c6;       /* accent FILL — black text on it (7.1:1) */
-  --blue-deep: #3e5f8a;  /* blue TEXT/icons on white (6.5:1) */
-  --blue-tint: #eaf0f8;  /* soft backgrounds, demo banner */
-  --blue-ink: #1c2f4a;   /* dark blue for hero gradients / banner text */
+  --blue: #68A8E8;       /* selected FILL — navy text on it (5.8:1) */
+  --blue-deep: #2B66A8;  /* blue TEXT/icons/focus on light backgrounds (5.9:1) */
+  --blue-tint: #E8F1FC;  /* soft backgrounds, demo banner */
+  --blue-ink: #102A43;
 
-  --success: #0e8345; --success-tint: #e6f4ec;
-  --danger:  #d6342c; --danger-tint:  #fdecea;
-  --warning: #a35f00; --warning-tint: #fff4e0;
+  --mint: #4EE4B6;       /* live FILL — navy text on it (9.1:1); as-is on navy (9.1:1) */
+  --mint-deep: #0A6B50;  /* mint-family TEXT/icons on light backgrounds (6.5:1) */
+  --mint-tint: #E3FBF3;
+
+  --success: #0A6B50; --success-tint: #E3FBF3;   /* success belongs to the mint family */
+  --danger:  #D6342C; --danger-tint:  #FDECEA;
+  --warning: #A35F00; --warning-tint: #FFF4E0;
 
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
   --font-serif: 'Libre Caslon Text', 'Times New Roman', Georgia, serif;
@@ -184,6 +190,7 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
   --shadow-card: 0 4px 16px rgba(0,0,0,.08);
   --ease: cubic-bezier(.2,.8,.2,1);
   --gutter: 20px;  --tap: 52px;
+  --map-filter: /* dark map; a light variant is switchable from the demo sheet */;
 }
 ```
 
@@ -199,7 +206,7 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
 | `.overline` | 12 / 700, uppercase, +0.08em | Small labels |
 
 ### Component classes (keep this vocabulary; add new ones in the same style)
-`.btn` + `.btn-primary` (black) / `.btn-accent` (blue, black text) / `.btn-inverse` (white on black screens) / `.btn-secondary` (grey) / `.btn-ghost` / `.btn-danger`, plus modifiers `.block` and `.sm` · `.icon-btn` (44px round) · `.field` / `.input` / `.input.invalid` / `.field-error` / `.field-hint` (54px inputs, grey fill, 2px black border on focus, red on error) · `.card` / `.card.flat` · `.sheet` / `.sheet-handle` / `.scrim` · `.chip` / `.chip.active` (black) · `.badge` + `.blue/.green/.red/.amber` · `.list-row` / `.list-icon` · `.row` / `.stack` / `.spacer` / `.divider` · `.page` (20px gutters) · `.scroll` (the screen's scroll container, hidden scrollbar).
+`.btn` + `.btn-primary` (navy) / `.btn-accent` (blue, navy text) / `.btn-inverse` (white on navy screens) / `.btn-secondary` (grey) / `.btn-ghost` / `.btn-danger`, plus modifiers `.block` and `.sm` · `.icon-btn` (44px round) · `.field` / `.input` / `.input.invalid` / `.field-error` / `.field-hint` (54px inputs, grey fill, 2px `--blue-deep` border on focus, red on error) · `.card` / `.card.flat` · `.sheet` / `.sheet-handle` / `.scrim` · `.chip` / `.chip.active` (sky blue, navy text) · `.badge` + `.blue/.green/.red/.amber` (`.green` is the mint family) · `.list-row` / `.list-icon` · `.row` / `.stack` / `.spacer` / `.divider` · `.page` (20px gutters) · `.scroll` (the screen's scroll container, hidden scrollbar).
 
 ### UI rules
 - Tap targets are at least 44px. Primary CTAs sit at the bottom of the screen, within thumb reach.
@@ -217,7 +224,7 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
   - **Leaflet check:** CSS transforms can offset Leaflet's pointer maths. In S3, verify pin taps and drags at scale < 1. If they're wrong, switch the device to CSS `zoom` instead.
   - At ≥ 1000px, show a short caption beside the phone: wordmark, "Interactive phone prototype — IIMT 2601 Group 2", and "Demo only".
 - All screens, sheets and modals are positioned **inside** the `.screen` element (`position: absolute` relative to it), never fixed to the browser window.
-- Screens with a black top area call `useStatusBar('dark')` so the fake status bar turns white-on-black.
+- Screens with a navy top area call `useStatusBar('dark')` so the fake status bar turns white-on-navy.
 
 ## 8. Data & state
 
@@ -281,7 +288,7 @@ PlugAndPark/                      # repo root (GitHub repo name: plug-and-park)
 ## Screenshots (in Claude outputs1/screenshots/S<n>/)
 | File | Shows |
 |---|---|
-| 01-landing.png | Landing, black hero, CTAs |
+| 01-landing.png | Landing, navy hero, CTAs |
 
 ## Known bugs / risks
 

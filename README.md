@@ -82,10 +82,6 @@ Claude outputs1/  plan, task files, reports, screenshots, demo-kit/
 ## Credits
 - Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors · map library Leaflet · fonts Inter and Libre Caslon Text (Google Fonts).
 - **Photo credits:** see `public/photos/README.md` for how to add photos. *(None yet — all spot images are generated illustrations.)*
-- Built with AI assistance (Claude), as the course allows.
 
 ## Team
-Built by **Group 2, IIMT 2601 (HKU)**.
-
-- [ ] **TODO (Roman): add member names and roles.**
-- Prototype: Roman
+Built by **Group 2, IIMT 2601 (HKU)

@@ -31,6 +31,12 @@ const IGNORE = /tile\.openstreetmap|basemaps\.cartocdn|fonts\.g|ERR_FAILED|net::
     check("checkSlot: ok / taken / closed / past", bk.checkSlot(spot, tomorrow(13), 60, all) === 'ok' && bk.checkSlot(spot, tomorrow(10), 60, all) === 'taken' && bk.checkSlot(spot, tomorrow(6), 60, all) === 'closed' && bk.checkSlot(spot, new Date(Date.now() - 3600e3), 60, all) === 'past')
     const near = bk.freeSlotsNear(spot, tomorrow(10), 60, all, 3).map(bk.hhmm)
     check('freeSlotsNear 10:00 → 3 free nearby times', near.length === 3 && near.every((t) => !['09:30', '10:00', '10:30', '11:00', '11:30'].includes(t)), near.join(','))
+    // RF-7: nearest earlier + two nearest later, in time order; one side fills for the other.
+    check('RF-7 freeSlotsNear 10:00 → 09:00, 12:00, 12:30', near.join(',') === '09:00,12:00,12:30', near.join(','))
+    const early = [{ id: 'b3', spotId: 'sp', start: tomorrow(7).toISOString(), durationMinutes: 120, status: 'paid' }]
+    check('RF-7 no earlier slot → three later (09:00, 09:30, 10:00)', bk.freeSlotsNear(spot, tomorrow(7), 60, early, 3).map(bk.hhmm).join(',') === '09:00,09:30,10:00', bk.freeSlotsNear(spot, tomorrow(7), 60, early, 3).map(bk.hhmm).join(','))
+    const late = [{ id: 'b4', spotId: 'sp', start: tomorrow(20).toISOString(), durationMinutes: 120, status: 'paid' }]
+    check('RF-7 no later slot → three earlier (18:00, 18:30, 19:00)', bk.freeSlotsNear(spot, tomorrow(21), 60, late, 3).map(bk.hhmm).join(',') === '18:00,18:30,19:00', bk.freeSlotsNear(spot, tomorrow(21), 60, late, 3).map(bk.hhmm).join(','))
     check('Transitions: pending→confirmed ok; declined→confirmed / completed→pending / cancelled→paid refused',
       bk.canTransition('pending', 'confirmed') && !bk.canTransition('declined', 'confirmed') && !bk.canTransition('completed', 'pending') && !bk.canTransition('cancelled', 'paid'))
   } finally {

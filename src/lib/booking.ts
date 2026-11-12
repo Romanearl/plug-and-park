@@ -64,7 +64,11 @@ export function startTimesForDay(spot: Pick<Spot, 'availability'>, day: Date, mi
   return out
 }
 
-/** The `n` free start times that day closest to `start` (30-minute steps), in time order. */
+/**
+ * Up to `n` free start times that day around `start` (30-minute steps), in time order:
+ * the nearest earlier one and the nearest later ones (n = 3 → 1 earlier + 2 later).
+ * If one side runs short, the other side fills the gap.
+ */
 export function freeSlotsNear(
   spot: Pick<Spot, 'id' | 'availability'>,
   start: Date,
@@ -73,11 +77,14 @@ export function freeSlotsNear(
   n = 3,
   now: Date = new Date(),
 ): Date[] {
-  return startTimesForDay(spot, start, minutes)
-    .filter((t) => t.getTime() !== start.getTime() && checkSlot(spot, t, minutes, bookings, now) === 'ok')
-    .sort((a, b) => Math.abs(a.getTime() - start.getTime()) - Math.abs(b.getTime() - start.getTime()))
-    .slice(0, n)
-    .sort((a, b) => a.getTime() - b.getTime())
+  const free = startTimesForDay(spot, start, minutes).filter((t) => t.getTime() !== start.getTime() && checkSlot(spot, t, minutes, bookings, now) === 'ok')
+  const earlier = free.filter((t) => t.getTime() < start.getTime()).reverse() // nearest first
+  const later = free.filter((t) => t.getTime() > start.getTime())
+  const wantEarlier = Math.min(earlier.length, n > 1 ? 1 : 0)
+  const picked = [...earlier.slice(0, wantEarlier), ...later.slice(0, n - wantEarlier)]
+  // Later side ran short → take more earlier ones.
+  if (picked.length < n) picked.push(...earlier.slice(wantEarlier, wantEarlier + n - picked.length))
+  return picked.sort((a, b) => a.getTime() - b.getTime())
 }
 
 export const endOf = (b: Pick<Booking, 'start' | 'durationMinutes'>) => addMin(new Date(b.start), b.durationMinutes)

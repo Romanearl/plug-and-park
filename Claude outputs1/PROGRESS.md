@@ -1,4 +1,4 @@
-# Progress            Last updated: Wed 11 Nov 2026 14:40
+# Progress            Last updated: Thu 12 Nov 2026 (RF-4…RF-10 run in progress)
 Repo: https://github.com/Romanearl/plug-and-park (public)
 Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: d2080ba (S10 — final)
 
@@ -24,6 +24,10 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: d20
 - RF-1 — repo created + pushed, Pages enabled (GitHub Actions source), deploy green, live URL + deep-link refresh (#/owner) verified with Playwright, no console errors.
 - RF-2 — `repo/` added to `.gitignore` (folder left in place).
 - RF-3 — no S3 work existed before S3_TASK.md; S3 is built directly from the task file.
+- RF-4 (195e532) — map fits all matching pins on load / filter change / district / resize, padded for the top overlay, the sheet and the pin size; zoom capped at 15; pan bounds widened so the fitted view still pans. 9 new checks in s3.mjs (phone + presenter view: every pin fully visible).
+- RF-5 (4278b16) — tile filter now `grayscale(1) contrast(0.6) brightness(1.3)` (token `--map-filter`, also used by the mini map). Before/after shots in screenshots/RF/.
+- RF-6 (bca1dcc) — "Use declined card" button beside "Use test card" (both small grey, one row, visible without scrolling). 3 new checks in s5.mjs.
+- RF-7 (1df7f54) — `freeSlotsNear` returns nearest earlier + two nearest later (demo case 09:00, 12:00, 12:30), filling from the other side. 3 new checks in s4.mjs.
 
 ## Skipped / needs a human
 - (none)

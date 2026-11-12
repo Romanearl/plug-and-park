@@ -12,7 +12,7 @@ Every screen exists in two versions:
 | 02-register-validation | Create account (errors) | D1/D3: Register | Registration checks every field live, including a valid email and an 8-digit Hong Kong mobile number. |
 | 03-verify-code | Verify code | D1/D3: Register | Every sign-in is confirmed with a 6-digit code sent to the user's phone (simulated in the demo). |
 | 04-map | Map home | D1: Search & select a spot | Drivers see available chargers on a map of Hong Kong, each pin showing the hourly price. |
-| 05-map-ccs2-preview | Map, filtered + preview | D1: Search & select a spot | Filters narrow the map to a connector type; tapping a spot shows a quick preview. |
+| 05-map-district-preview | Map, district search + preview | D1: Search & select a spot | Searching a district zooms the map to its chargers; tapping a pin shows a quick preview. |
 | 06-spot-details | Spot details | D1: Platform displays spots with details | Spot details show photos, price, rating and reviews, charger type and power, amenities and opening hours. |
 | 07-booking-sheet | Booking sheet | D1: Select time slot | The driver picks a day, a start time and a duration (15 min to 2 h), and sees the price straight away. |
 | 08-slot-unavailable | Slot unavailable | D1: Spot available? **No** | If the slot is already taken, the platform says so and suggests the nearest free times. |

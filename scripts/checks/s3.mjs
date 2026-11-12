@@ -313,6 +313,74 @@ const center = (p) => p.evaluate(() => {
   await ctx.close()
 }
 
+// 9. RF-4: every matching pin is fully inside the visible map area (below the top overlay, above the sheet)
+{
+  // Runs in the page (or an iframe): how many pins are fully visible, out of how many, and the zoom-independent details.
+  const pinReport = (frame) => frame.evaluate(() => {
+    const r = (el) => el.getBoundingClientRect()
+    const map = r(document.querySelector('.map'))
+    const top = r(document.querySelector('.map-top'))
+    const sheet = r(document.querySelector('.snap-sheet'))
+    // The last 18px of .map-top is a transparent fade, not chrome.
+    const scale = map.width / document.querySelector('.map').offsetWidth
+    const area = { left: map.left, right: map.right, top: top.bottom - 18 * scale, bottom: sheet.top }
+    const all = [...document.querySelectorAll('.pin')]
+    const bad = all.filter((el) => {
+      const b = r(el)
+      return b.left < area.left || b.right > area.right || b.top < area.top || b.bottom > area.bottom
+    })
+    return { total: all.length, inside: all.length - bad.length, bad: bad.map((el) => el.dataset.spot) }
+  })
+  const fits = async (frame, n) => {
+    const rep = await pinReport(frame)
+    return [rep.total === n && rep.inside === n, `${rep.inside}/${rep.total} inside${rep.bad.length ? ' — clipped: ' + rep.bad.join(',') : ''}`]
+  }
+  const { ctx, p } = await driverPage()
+  await p.goto(BASE + '#/app')
+  await pins(p).first().waitFor()
+  await p.waitForTimeout(600)
+  check('RF-4 on load: all 12 pins fully visible', ...(await fits(p, 12)))
+  await chip(p, 'Type 2').click()
+  await p.waitForTimeout(1000)
+  check('RF-4 Type 2 filter: all 6 pins fully visible', ...(await fits(p, 6)))
+  await chip(p, 'All').click()
+  await chip(p, 'GB/T').click()
+  await p.waitForTimeout(1000)
+  check('RF-4 single result: pin visible', ...(await fits(p, 1)))
+  const zoom = await p.evaluate(() => Math.max(...[...document.querySelectorAll('.leaflet-tile')].map((t) => Number(((t.getAttribute('src') ?? '').match(/\/(\d+)\/\d+\/\d+\.png/) ?? [])[1]))))
+  check('RF-4 single result: zoom capped at 15', zoom === 15, `tile zoom ${zoom}`)
+  await chip(p, 'All').click()
+  await p.waitForTimeout(1000)
+  check('RF-4 filter cleared: all 12 fully visible again', ...(await fits(p, 12)))
+  await p.getByRole('button', { name: /Where do you need to charge/ }).click()
+  await p.getByRole('dialog', { name: 'Choose a district' }).getByRole('button', { name: /Sai Kung/ }).click()
+  await p.waitForTimeout(1200)
+  check('RF-4 district Sai Kung: both pins fully visible', ...(await fits(p, 2)))
+  await p.getByRole('button', { name: 'Clear district', exact: true }).click()
+  await p.waitForTimeout(1200)
+  check('RF-4 district cleared: all 12 fully visible', ...(await fits(p, 12)))
+  // Reset demo → sign in again → fresh map
+  await p.evaluate(() => { localStorage.removeItem('pp.db') })
+  await p.goto('about:blank')
+  await p.goto(BASE + '#/app')
+  await pins(p).first().waitFor()
+  await p.waitForTimeout(600)
+  check('RF-4 after re-seed: all 12 fully visible', ...(await fits(p, 12)))
+  await ctx.close()
+
+  // Presenter view at 1280×720: the driver phone is an iframe.
+  const pc = await browser.newContext({ viewport: { width: 1280, height: 720 } })
+  const P = await pc.newPage()
+  P.on('pageerror', (e) => errors.push(e.message))
+  await P.goto(BASE + '#/presenter')
+  const d = P.frameLocator('iframe[name="driver"]')
+  await d.locator('.pin').first().waitFor({ timeout: 15000 })
+  await P.waitForTimeout(800)
+  const frame = P.frames().find((f) => f.name() === 'driver')
+  check('RF-4 presenter view: all 12 pins fully visible', ...(await fits(frame, 12)))
+  await pc.close()
+}
+
 await browser.close()
 if (errors.length) results.push('FAIL  console/page errors: ' + [...new Set(errors)].join(' | '))
 console.log(results.join('\n'))

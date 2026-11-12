@@ -28,7 +28,11 @@ import { cx, hkd } from '../../lib/util'
 
 const HK_CENTER: L.LatLngTuple = [22.36, 114.13]
 const HK_ZOOM = 11
-const HK_BOUNDS = L.latLngBounds([22.13, 113.8], [22.6, 114.45])
+const FIT_MAX_ZOOM = 15 // a single result never zooms in past street level
+const PIN_W = 64
+const PIN_H = 48
+// Roomy enough that the fitted all-pins view (zoom 10) can still be panned in every direction.
+const HK_BOUNDS = L.latLngBounds([21.6, 113.2], [23.1, 115.0])
 // CARTO's basemaps now return an "API key required" watermark, so we use the standard
 // OpenStreetMap tiles (no key) and mute them with CSS (.map .leaflet-tile-pane) for a Positron-like look.
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -133,7 +137,6 @@ export default function MapHome() {
         <MapEffects
           selected={selected}
           visible={visible}
-          district={filters.district}
           flyDistrict={flyDistrict}
           sheetPx={sheetPx}
           onMapTap={() => selectedId && deselect()}
@@ -293,23 +296,21 @@ function makePinIcon(spot: Spot, selected: boolean) {
   return L.divIcon({
     className: 'pin-wrap',
     html: `<div class="pin${selected ? ' selected' : ''}" data-spot="${spot.id}"><span>$${spot.pricePerHour}</span></div>`,
-    iconSize: [64, 48],
-    iconAnchor: [32, 46],
+    iconSize: [PIN_W, PIN_H],
+    iconAnchor: [PIN_W / 2, PIN_H - 2],
   })
 }
 
-/** Imperative bits: fly-to on selection / district, tile-failure detection, map taps. */
+/** Imperative bits: fly-to on selection, fit-to-pins, tile-failure detection, map taps. */
 function MapEffects({
   selected,
   visible,
-  district,
   flyDistrict,
   sheetPx,
   onMapTap,
 }: {
   selected: Spot | null
   visible: Spot[]
-  district: District | null
   flyDistrict: number
   sheetPx: number
   onMapTap: () => void
@@ -326,33 +327,63 @@ function MapEffects({
     map.flyTo(map.unproject(p, zoom), zoom, { duration: 0.6 })
   }
 
+  // Fit every matching pin into the area between the top overlay and the sheet (RF-4).
+  const userMoved = useRef(false)
+  const fitVisible = (animate: boolean) => {
+    userMoved.current = false
+    if (!visible.length) {
+      map.setView(HK_CENTER, HK_ZOOM, { animate })
+      return
+    }
+    const size = map.getSize()
+    const top = map.getContainer().parentElement?.querySelector<HTMLElement>('.map-top')?.offsetHeight ?? 130
+    const sheet = Math.min(sheetRef.current, size.y * 0.6)
+    const b = L.latLngBounds(visible.map((s) => [s.lat, s.lng] as L.LatLngTuple))
+    // Pins are 64×48 and anchored at their bottom centre, so pad by the pin size too.
+    map.fitBounds(b, {
+      paddingTopLeft: [PIN_W / 2 + 6, top + PIN_H - 8],
+      paddingBottomRight: [PIN_W / 2 + 6, sheet + 12],
+      maxZoom: FIT_MAX_ZOOM,
+      animate,
+      duration: 0.6,
+    })
+  }
+  const fitRef = useRef(fitVisible)
+  fitRef.current = fitVisible
+  const selectedRef = useRef(selected)
+  selectedRef.current = selected
+
   useEffect(() => {
     if (selected) flyTo([selected.lat, selected.lng], Math.max(map.getZoom(), 14))
   }, [selected?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // On load, when the matching set changes, and on district pick / clear filters.
+  const visibleKey = visible.map((s) => s.id).sort().join()
+  const first = useRef(true)
   useEffect(() => {
-    if (flyDistrict === 0) return
-    const pts = district ? visible.filter((s) => s.district === district) : []
-    if (district && pts.length) {
-      const b = L.latLngBounds(pts.map((s) => [s.lat, s.lng] as L.LatLngTuple))
-      const z = Math.min(map.getBoundsZoom(b.pad(0.6)), 14)
-      flyTo(b.getCenter(), z)
-    } else {
-      map.flyTo(HK_CENTER, HK_ZOOM, { duration: 0.6 })
-    }
-  }, [flyDistrict]) // eslint-disable-line react-hooks/exhaustive-deps
+    const animate = !first.current
+    first.current = false
+    if (!selected) fitVisible(animate)
+  }, [visibleKey, flyDistrict]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onClick = () => tapRef.current()
+    const onDrag = () => (userMoved.current = true)
     map.on('click', onClick)
+    map.on('dragstart', onDrag)
     return () => {
       map.off('click', onClick)
+      map.off('dragstart', onDrag)
     }
   }, [map])
 
   // The map container can change size (frame scaling, sheet) — keep Leaflet in sync.
   useEffect(() => {
-    const ro = new ResizeObserver(() => map.invalidateSize())
+    const ro = new ResizeObserver(() => {
+      map.invalidateSize()
+      // Until the user pans, keep every pin in view at the new size.
+      if (!userMoved.current && !selectedRef.current) fitRef.current(false)
+    })
     ro.observe(map.getContainer())
     return () => ro.disconnect()
   }, [map])

@@ -149,7 +149,7 @@ async function waitAmount(p, attr, value, ms = 3000) {
   await owner.getByRole('switch', { name: /Fo Tan listed/ }).uncheck({ force: true })
   const t0 = Date.now()
   const gone = await driver.locator('.pin[data-spot="sp_shatin_1"]').waitFor({ state: 'detached', timeout: 1000 }).then(() => true, () => false)
-  check('Switch off → pin disappears on the driver phone within 1 s', gone && (await driver.locator('.pin').count()) === 11, `${Date.now() - t0} ms`)
+  check('Switch off → pin disappears on the driver phone within 1 s', gone && (await driver.evaluate(() => [...document.querySelectorAll('.pin')].reduce((n, el) => n + Number(el.dataset.count ?? 1), 0))) === 11, `${Date.now() - t0} ms`)
   await driver.bringToFront()
   await driver.goto(BASE + '#/app/spot/sp_shatin_1')
   check('Hidden spot can\'t be opened/requested', await seen(driver.getByText('This charger is no longer listed')))

@@ -55,6 +55,20 @@ async function driverPage(device = { viewport: { width: 390, height: 844 }, isMo
   return { ctx, p }
 }
 const pins = (p) => p.locator('.pin')
+// Chargers shown on the map: a group pin (RF-12) stands for several.
+const spotCount = (p) => p.evaluate(() => [...document.querySelectorAll('.pin')].reduce((n, el) => n + Number(el.dataset.count ?? 1), 0))
+// The pin that stands for a spot: its own price pin or the group it is merged into.
+const pinOf = (p, id) => p.locator(`.pin[data-spot="${id}"], .pin[data-spots~="${id}"]`)
+// Taps a spot's own price pin; if it is merged into a group pin, taps the group first (which zooms in).
+const tapSpotPin = async (p, id) => {
+  const own = p.locator(`.pin[data-spot="${id}"]`)
+  if (!(await own.count())) {
+    await pinOf(p, id).click()
+    await own.waitFor({ timeout: 4000 })
+    await p.waitForTimeout(900)
+  }
+  await own.click()
+}
 const chip = (p, name) => p.getByRole('toolbar', { name: 'Filters' }).getByRole('button', { name, exact: true })
 const sheetH = (p) => p.locator('.snap-sheet').evaluate((el) => el.offsetHeight)
 const center = (p) => p.evaluate(() => {
@@ -67,24 +81,24 @@ const center = (p) => p.evaluate(() => {
   const { ctx, p } = await driverPage()
   await p.goto(BASE + '#/app')
   await pins(p).first().waitFor()
-  check('12 pins show', (await pins(p).count()) === 12)
+  check('12 pins show', (await spotCount(p)) === 12)
   check('Sheet title "12 chargers nearby"', await seen(p.getByRole('heading', { name: '12 chargers nearby' })))
   const counts = {}
   for (const c of ['CCS2', 'Type 2', 'CHAdeMO', 'GB/T']) {
     await chip(p, c).click()
-    counts[c] = await pins(p).count()
+    counts[c] = await spotCount(p)
   }
   check('Charger filter counts CCS2 3 / Type 2 6 / CHAdeMO 2 / GB/T 1', counts.CCS2 === 3 && counts['Type 2'] === 6 && counts.CHAdeMO === 2 && counts['GB/T'] === 1, JSON.stringify(counts))
   await chip(p, 'All').click()
   await chip(p, 'Under $25').click()
-  check('Under $25 → 6 pins', (await pins(p).count()) === 6, String(await pins(p).count()))
+  check('Under $25 → 6 pins', (await spotCount(p)) === 6, String(await spotCount(p)))
   await chip(p, 'Type 2').click()
-  check('Type 2 + Under $25 → 4 pins', (await pins(p).count()) === 4, String(await pins(p).count()))
+  check('Type 2 + Under $25 → 4 pins', (await spotCount(p)) === 4, String(await spotCount(p)))
   await chip(p, 'Type 2').click() // toggles off
   await chip(p, 'CCS2').click()
   check('CCS2 + Under $25 → no results state', await seen(p.getByText('No chargers match these filters')))
   await p.getByRole('button', { name: 'Clear filters' }).click()
-  check('Clear filters → 12 again', (await pins(p).count()) === 12)
+  check('Clear filters → 12 again', (await spotCount(p)) === 12)
   const openNowExpected = await p.evaluate(() => {
     const db = JSON.parse(localStorage.getItem('pp.db'))
     const now = new Date()
@@ -93,11 +107,12 @@ const center = (p) => p.evaluate(() => {
     return db.spots.filter((s) => s.availability.some((w) => w.day === now.getDay() && mins >= t(w.start) && mins < t(w.end))).length
   })
   await chip(p, 'Open now').click()
-  check('Open now matches availability', (await pins(p).count()) === openNowExpected, `${await pins(p).count()} vs ${openNowExpected}`)
+  check('Open now matches availability', (await spotCount(p)) === openNowExpected, `${await spotCount(p)} vs ${openNowExpected}`)
   await chip(p, 'Open now').click()
 
   // District sheet + fly
-  const skPin = () => p.locator('.pin[data-spot="sp_saikung_1"]').boundingBox()
+  const skPin = () => pinOf(p, 'sp_saikung_1').boundingBox()
+  await p.waitForTimeout(900) // let the map refit and the pins regroup after the last filter change
   const skBefore = await skPin()
   await p.getByRole('button', { name: /Where do you need to charge/ }).click()
   const dlg = p.getByRole('dialog', { name: 'Choose a district' })
@@ -105,7 +120,7 @@ const center = (p) => p.evaluate(() => {
   check('District sheet shows counts (Sai Kung 2 chargers)', await seen(dlg.getByRole('button', { name: /Sai Kung.*2 chargers/ })))
   await dlg.getByRole('button', { name: /Sai Kung/ }).click()
   await p.waitForTimeout(1200)
-  check('District filter → 2 pins', (await pins(p).count()) === 2)
+  check('District filter → 2 pins', (await spotCount(p)) === 2)
   const skAfter = await skPin()
   check('District filter flies the map', !!skBefore && !!skAfter && Math.hypot(skAfter.x - skBefore.x, skAfter.y - skBefore.y) > 40, JSON.stringify([skBefore, skAfter].map((b) => b && [Math.round(b.x), Math.round(b.y)])))
   check('Search pill shows district', await seen(p.getByRole('button', { name: /Sai Kung/ }).first()))
@@ -117,7 +132,7 @@ const center = (p) => p.evaluate(() => {
   const { ctx, p } = await driverPage()
   await p.goto(BASE + '#/app')
   await pins(p).first().waitFor()
-  await p.locator('.pin[data-spot="sp_shatin_1"]').click()
+  await tapSpotPin(p, 'sp_shatin_1')
   check('Pin tap selects that spot (full screen)', await seen(p.locator('.spot-preview[data-spot="sp_shatin_1"]')))
   check('Selected pin turns blue', (await p.locator('.pin.selected').getAttribute('data-spot')) === 'sp_shatin_1')
   await p.getByRole('button', { name: 'Close preview' }).click()
@@ -147,6 +162,13 @@ const center = (p) => p.evaluate(() => {
     await p.goto(BASE + '#/app')
     await pins(p).first().waitFor()
     await p.waitForTimeout(500)
+    // Raw mouse clicks at the pin's on-screen position (this is what the frame's scale could break).
+    if (!(await p.locator(`.pin[data-spot="${id}"]`).count())) {
+      const g = await pinOf(p, id).boundingBox()
+      await p.mouse.click(g.x + g.width / 2, g.y + g.height / 2)
+      await p.locator(`.pin[data-spot="${id}"]`).waitFor({ timeout: 4000 })
+      await p.waitForTimeout(900)
+    }
     const box = await p.locator(`.pin[data-spot="${id}"]`).boundingBox()
     await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
     check(`Framed: tap on ${id} selects it`, await seen(p.locator(`.spot-preview[data-spot="${id}"]`)))
@@ -158,7 +180,7 @@ const center = (p) => p.evaluate(() => {
   await p.goto(BASE + '#/app')
   await pins(p).first().waitFor()
   await p.waitForTimeout(500)
-  const pin = p.locator('.pin[data-spot="sp_wanchai_1"]')
+  const pin = pinOf(p, 'sp_wanchai_1')
   const a = await pin.boundingBox()
   const mapBox = await p.locator('.map').boundingBox()
   const sx = mapBox.x + mapBox.width / 2
@@ -329,7 +351,8 @@ const center = (p) => p.evaluate(() => {
       const b = r(el)
       return b.left < area.left || b.right > area.right || b.top < area.top || b.bottom > area.bottom
     })
-    return { total: all.length, inside: all.length - bad.length, bad: bad.map((el) => el.dataset.spot) }
+    const n = (els) => els.reduce((sum, el) => sum + Number(el.dataset.count ?? 1), 0)
+    return { total: n(all), inside: n(all) - n(bad), bad: bad.map((el) => el.dataset.spot ?? el.dataset.spots) }
   })
   const fits = async (frame, n) => {
     const rep = await pinReport(frame)
@@ -379,6 +402,105 @@ const center = (p) => p.evaluate(() => {
   const frame = P.frames().find((f) => f.name() === 'driver')
   check('RF-4 presenter view: all 12 pins fully visible', ...(await fits(frame, 12)))
   await pc.close()
+}
+
+// 10. RF-12: pins that would overlap merge into a group pin
+{
+  const ALL = ['sp_saikung_1', 'sp_saikung_2', 'sp_kwuntong_1', 'sp_shatin_1', 'sp_taipo_1', 'sp_wanchai_1']
+  // Pairs of pin pills whose boxes intersect (the invisible tap area and the tail are ignored).
+  const overlaps = (p) => p.evaluate(() => {
+    const boxes = [...document.querySelectorAll('.pin')].map((el) => ({ r: el.getBoundingClientRect(), id: el.dataset.spot ?? el.dataset.spots }))
+    const out = []
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i].r
+        const b = boxes[j].r
+        if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) out.push(`${boxes[i].id} × ${boxes[j].id}`)
+      }
+    return out
+  })
+  const tileZoom = (p) => p.evaluate(() => Math.max(...[...document.querySelectorAll('.leaflet-tile')].map((t) => Number(((t.getAttribute('src') ?? '').match(/\/(\d+)\/\d+\/\d+\.png/) ?? [])[1]))))
+  const fresh = async (p) => {
+    await p.goto('about:blank')
+    await p.goto(BASE + '#/app')
+    await pins(p).first().waitFor()
+    await p.waitForTimeout(700)
+  }
+  const { ctx, p } = await driverPage()
+  await fresh(p)
+  const groups = await p.locator('.pin.group').evaluateAll((els) => els.map((el) => ({ ids: el.dataset.spots.split(' '), label: el.textContent.trim() })))
+  check('RF-12 opening view: some pins are merged into group pins', groups.length >= 1 && (await pins(p).count()) < 12, `${await pins(p).count()} pins, groups: ${groups.map((g) => g.label).join(' | ')}`)
+  check('RF-12 group label is "N · $lowest+"', groups.every((g) => new RegExp(`^${g.ids.length} · \\$\\d+\\+$`).test(g.label)), groups.map((g) => g.label).join(' | '))
+  const lowestOk = await p.evaluate((gs) => {
+    const db = JSON.parse(localStorage.getItem('pp.db'))
+    return gs.every((g) => g.label.endsWith('$' + Math.min(...g.ids.map((id) => db.spots.find((s) => s.id === id).pricePerHour)) + '+'))
+  }, groups)
+  check('RF-12 group label shows the lowest member price', lowestOk)
+  check('RF-12 sheet still says "12 chargers nearby" and lists 12', (await seen(p.getByRole('heading', { name: '12 chargers nearby' }))) && (await p.locator('.spot-card').count()) === 12 && (await spotCount(p)) === 12)
+
+  // No two pins overlap at any zoom level (10 → 17, zooming in with the keyboard).
+  await p.locator('.map').focus()
+  const bad = []
+  let z = await tileZoom(p)
+  const seenZooms = []
+  for (let i = 0; i < 9; i++) {
+    seenZooms.push(z)
+    const o = await overlaps(p)
+    if (o.length) bad.push(`z${z}: ${o.join(', ')}`)
+    if ((await spotCount(p)) !== 12) bad.push(`z${z}: ${await spotCount(p)} chargers on the map`)
+    await p.keyboard.press('+')
+    await p.waitForTimeout(700)
+    const nz = await tileZoom(p)
+    if (nz === z) break
+    z = nz
+  }
+  check('RF-12 no two pins overlap at any zoom level (10–17)', bad.length === 0 && seenZooms[0] === 10 && seenZooms.at(-1) === 17, bad.join(' ; ') || `zooms ${seenZooms.join(',')}`)
+  check('RF-12 zoom levels stay whole numbers', seenZooms.every((n) => Number.isInteger(n)))
+
+  // Filters regroup: with one result per area nothing is merged.
+  await fresh(p)
+  await chip(p, 'CCS2').click()
+  await p.waitForTimeout(1000)
+  check('RF-12 after a filter change: no overlaps, 3 chargers on the map', (await overlaps(p)).length === 0 && (await spotCount(p)) === 3, (await overlaps(p)).join(', '))
+
+  // Every spot is reachable from the map within two taps.
+  const ids = await p.evaluate(() => JSON.parse(localStorage.getItem('pp.db')).spots.filter((s) => s.active && s.reviewStatus === 'approved').map((s) => s.id))
+  const unreachable = []
+  let groupTapSplits = true
+  for (const id of ids) {
+    await fresh(p)
+    let taps = 0
+    if (!(await p.locator(`.pin[data-spot="${id}"]`).count())) {
+      await pinOf(p, id).click()
+      taps++
+      await p.waitForTimeout(1100)
+      if ((await overlaps(p)).length) groupTapSplits = false
+    }
+    const own = p.locator(`.pin[data-spot="${id}"]`)
+    if (await own.count()) {
+      await own.click()
+      taps++
+    }
+    if (!(await seen(p.locator(`.spot-preview[data-spot="${id}"]`), 2500)) || taps > 2) unreachable.push(`${id} (${taps} taps)`)
+  }
+  check(`RF-12 every spot (${ids.length}) is reachable from the map within two taps`, ids.length === 12 && unreachable.length === 0, unreachable.join(', '))
+  check('RF-12 tapping a group zooms in to separate price pins (no overlaps, zoom ≤ 15)', groupTapSplits && ALL.length > 0)
+
+  // A selected spot always has its own pin, even at the all-Hong-Kong zoom.
+  await fresh(p)
+  await p.locator('.spot-card[data-spot="sp_saikung_1"]').click()
+  check('RF-12 a selected spot is shown as its own pin', await seen(p.locator('.pin.selected[data-spot="sp_saikung_1"]')))
+
+  // Demo path unchanged: district search → the single $30 pin → preview.
+  await fresh(p)
+  await p.getByRole('button', { name: /Where do you need to charge/ }).click()
+  await p.getByRole('dialog', { name: 'Choose a district' }).getByRole('button', { name: /Kwun Tong/ }).click()
+  await p.waitForTimeout(1200)
+  const kt = p.locator('.pin[data-spot="sp_kwuntong_1"]')
+  check('RF-12 demo path: Kwun Tong shows one $30 price pin (not a group)', (await pins(p).count()) === 1 && (await kt.textContent()).trim() === '$30' && (await p.locator('.pin.group').count()) === 0)
+  await kt.click()
+  check('RF-12 demo path: tapping the $30 pin opens the preview', await seen(p.locator('.spot-preview[data-spot="sp_kwuntong_1"]')))
+  await ctx.close()
 }
 
 await browser.close()

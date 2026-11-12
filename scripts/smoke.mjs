@@ -89,7 +89,7 @@ async function onePath(browser, run) {
   await D.locator('.pin').first().waitFor({ timeout: 15000 })
 
   step('2 district search → Kwun Tong → Hoi Bun Road pin → details')
-  assert((await D.locator('.pin').count()) === 12, '12 pins on load')
+  assert((await D.evaluate(() => [...document.querySelectorAll('.pin')].reduce((n, el) => n + Number(el.dataset.count ?? 1), 0))) === 12, '12 chargers on the map on load (group pins count their members)')
   await D.getByRole('button', { name: /Where do you need to charge/ }).click()
   await D.getByRole('dialog', { name: 'Choose a district' }).getByRole('button', { name: /Kwun Tong/ }).click()
   await D.waitForFunction(() => document.querySelectorAll('.pin').length === 1, null, { timeout: T })

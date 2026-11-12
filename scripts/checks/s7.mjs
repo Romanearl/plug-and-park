@@ -109,7 +109,7 @@ let newSpotId = null
   const driver = await tab(ctx, 'u_driver_demo')
   await driver.goto(BASE + '#/app')
   await driver.locator('.pin').first().waitFor()
-  check('In-review spot is not on the driver map', (await driver.locator(`.pin[data-spot="${newSpotId}"]`).count()) === 0 && (await driver.locator('.pin').count()) === 12)
+  check('In-review spot is not on the driver map', (await driver.locator(`.pin[data-spot="${newSpotId}"], .pin[data-spots~="${newSpotId}"]`).count()) === 0 && (await driver.evaluate(() => [...document.querySelectorAll('.pin')].reduce((n, el) => n + Number(el.dataset.count ?? 1), 0))) === 12)
   await driver.goto(BASE + `#/app/spot/${newSpotId}`)
   check('In-review spot can\'t be opened/booked', await seen(driver.getByText('This charger is no longer listed')))
 
@@ -162,7 +162,7 @@ let newSpotId = null
   const live = db.spots.find((s) => s.id === newSpotId)
   const ownerUser = db.users.find((u) => u.email === 'ho.wingsze@example.com')
   check('Spot approved + active, PIN saved, payout method masked', live.reviewStatus === 'approved' && live.active && live.accessPin === '2468' && ownerUser.payoutMethod.label === 'FPS •••• 5432')
-  check('New pin appears live on the driver map', await seen(driver.locator(`.pin[data-spot="${newSpotId}"]`), 2000))
+  check('New pin appears live on the driver map', await seen(driver.locator(`.pin[data-spot="${newSpotId}"], .pin[data-spots~="${newSpotId}"]`), 2000))
   await ctx.close()
 }
 

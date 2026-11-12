@@ -183,7 +183,16 @@ async function waitForMap(page) {
     .catch(() => console.warn('  ! map tiles did not load (offline?)'))
   await page.waitForTimeout(500)
 }
-const tapPin = (page, id) => page.locator(`.pin[data-spot="${id}"]`).click()
+// Taps a spot's price pin; if it is merged into a group pin (RF-12), taps the group first to zoom in.
+const tapPin = async (page, id) => {
+  const own = page.locator(`.pin[data-spot="${id}"]`)
+  if (!(await own.count())) {
+    await page.locator(`.pin[data-spots~="${id}"]`).click()
+    await own.waitFor()
+    await page.waitForTimeout(900)
+  }
+  await own.click()
+}
 const chip = (page, name) => page.getByRole('toolbar', { name: 'Filters' }).getByRole('button', { name, exact: true }).click()
 
 scenarios.push(

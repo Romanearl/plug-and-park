@@ -549,6 +549,8 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
 /* Invisible hit area around the pill so the tap target is at least 44px tall. */
 .pin::before { content: ""; position: absolute; inset: -8px -10px -10px; }
 .pin.selected { background: var(--blue); color: var(--ink); transform: translateX(-50%) scale(1.15); transform-origin: bottom center; }
+/* Group pin (RF-12): several chargers that would overlap at this zoom. Same pill, wider label. */
+.pin.group { padding: 0 12px; }
 .pin.selected::after { border-top-color: var(--blue); }
 
 .map-top {

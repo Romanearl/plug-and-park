@@ -347,7 +347,7 @@ async function phonePath(browser, mode) {
   await O.getByText('Your charger is live').waitFor()
   await D.bringToFront()
   await D.goto(BASE + `?r=${Date.now()}#/app`)
-  await D.locator(`.pin[data-spot="${newId}"]`).waitFor() // it's on the map…
+  await D.locator(`.pin[data-spot="${newId}"], .pin[data-spots~="${newId}"]`).waitFor() // it's on the map (maybe inside a group pin)…
   await D.locator(`.spot-card[data-spot="${newId}"]`).click() // …but overlaps other Sai Kung pins, so select it from the list
   await D.locator('.spot-preview').waitFor()
   await D.waitForTimeout(1500)

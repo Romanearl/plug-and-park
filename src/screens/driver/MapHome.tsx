@@ -11,6 +11,7 @@ import { SnapSheet, type Snap } from '../../components/SnapSheet'
 import { SpotPhoto } from '../../components/SpotPhoto'
 import type { ChargerType, District, Spot } from '../../data/types'
 import { openStatus } from '../../lib/availability'
+import { groupPins, type PinGroup } from '../../lib/pins'
 import { navigate } from '../../lib/router'
 import {
   CHARGER_TYPES,
@@ -30,6 +31,7 @@ const HK_CENTER: L.LatLngTuple = [22.36, 114.13]
 const HK_ZOOM = 11
 const FIT_MAX_ZOOM = 15 // a single result never zooms in past street level
 const PIN_W = 64
+const GROUP_W = 104 // widest group pin ("12 · $20+")
 const PIN_H = 48
 // Roomy enough that the fitted all-pins view (zoom 10) can still be panned in every direction.
 const HK_BOUNDS = L.latLngBounds([21.6, 113.2], [23.1, 115.0])
@@ -57,6 +59,8 @@ export default function MapHome() {
   const [tilesFailed, setTilesFailed] = useState(false)
   const [sheetPx, setSheetPx] = useState(120)
   const [flyDistrict, setFlyDistrict] = useState(0) // bump to trigger a district fly-to
+  const [zoom, setZoom] = useState(HK_ZOOM)
+  const [groupTap, setGroupTap] = useState<{ ids: string[]; n: number } | null>(null) // a tapped group pin to zoom into
   const tileStats = useRef({ loaded: 0, errors: 0 })
 
   useEffect(() => {
@@ -66,6 +70,8 @@ export default function MapHome() {
   const now = new Date()
   const visible = useMemo(() => sortSpots(filterSpots(db.spots, filters, now), sort), [db.spots, filters, sort, now.getHours(), now.getMinutes()]) // eslint-disable-line react-hooks/exhaustive-deps
   const counts = useMemo(() => districtCounts(db.spots), [db.spots])
+  // Pins that would overlap at this zoom merge into one group pin; the selected spot keeps its own.
+  const pins = useMemo(() => groupPins(visible, zoom, selectedId), [visible, zoom, selectedId])
   const selected = selectedId ? (visible.find((s) => s.id === selectedId) ?? null) : null
 
   // Deselect if the selected spot got filtered out.
@@ -139,18 +145,31 @@ export default function MapHome() {
           visible={visible}
           flyDistrict={flyDistrict}
           sheetPx={sheetPx}
+          groupTap={groupTap}
+          onZoom={setZoom}
+          onGroupStuck={(ids) => select(ids[0])}
           onMapTap={() => selectedId && deselect()}
         />
-        {visible.map((s) => (
-          <Marker
-            key={s.id}
-            position={[s.lat, s.lng]}
-            icon={pinIcon(s, s.id === selectedId)}
-            zIndexOffset={s.id === selectedId ? 1000 : 0}
-            title={`${s.title}, ${hkd(s.pricePerHour)} per hour`}
-            eventHandlers={{ click: () => select(s.id) }}
-          />
-        ))}
+        {pins.map((g) =>
+          g.spots.length === 1 ? (
+            <Marker
+              key={g.key}
+              position={[g.lat, g.lng]}
+              icon={pinIcon(g.spots[0], g.spots[0].id === selectedId)}
+              zIndexOffset={g.spots[0].id === selectedId ? 1000 : 0}
+              title={`${g.spots[0].title}, ${hkd(g.spots[0].pricePerHour)} per hour`}
+              eventHandlers={{ click: () => select(g.spots[0].id) }}
+            />
+          ) : (
+            <Marker
+              key={g.key}
+              position={[g.lat, g.lng]}
+              icon={groupIcon(g)}
+              title={`${g.spots.length} chargers, from ${hkd(Math.min(...g.spots.map((s) => s.pricePerHour)))} per hour`}
+              eventHandlers={{ click: () => setGroupTap((t) => ({ ids: [...g.spots].sort((a, b) => a.pricePerHour - b.pricePerHour).map((s) => s.id), n: (t?.n ?? 0) + 1 })) }}
+            />
+          ),
+        )}
       </MapContainer>
 
       <div className={cx('map-attribution', snap === 'full' && 'hidden')} dangerouslySetInnerHTML={{ __html: ATTRIBUTION }} />
@@ -300,6 +319,19 @@ function makePinIcon(spot: Spot, selected: boolean) {
     iconAnchor: [PIN_W / 2, PIN_H - 2],
   })
 }
+function groupIcon(g: PinGroup) {
+  let icon = iconCache.get(g.key + '|' + g.label)
+  if (!icon) {
+    icon = L.divIcon({
+      className: 'pin-wrap',
+      html: `<div class="pin group" data-count="${g.spots.length}" data-spots="${g.spots.map((s) => s.id).join(' ')}"><span>${g.label}</span></div>`,
+      iconSize: [GROUP_W, PIN_H],
+      iconAnchor: [GROUP_W / 2, PIN_H - 2],
+    })
+    iconCache.set(g.key + '|' + g.label, icon)
+  }
+  return icon
+}
 
 /** Imperative bits: fly-to on selection, fit-to-pins, tile-failure detection, map taps. */
 function MapEffects({
@@ -307,10 +339,17 @@ function MapEffects({
   visible,
   flyDistrict,
   sheetPx,
+  groupTap,
+  onZoom,
+  onGroupStuck,
   onMapTap,
 }: {
   selected: Spot | null
   visible: Spot[]
+  groupTap: { ids: string[]; n: number } | null
+  onZoom: (zoom: number) => void
+  /** A group that can't be split by zooming (already at max zoom): ids, cheapest first. */
+  onGroupStuck: (ids: string[]) => void
   flyDistrict: number
   sheetPx: number
   onMapTap: () => void
@@ -329,24 +368,20 @@ function MapEffects({
 
   // Fit every matching pin into the area between the top overlay and the sheet (RF-4).
   const userMoved = useRef(false)
+  const fitPadding = () => {
+    const top = map.getContainer().parentElement?.querySelector<HTMLElement>('.map-top')?.offsetHeight ?? 130
+    const sheet = Math.min(sheetRef.current, map.getSize().y * 0.6)
+    // Pins are anchored at their bottom centre, so pad by the pin size too (a group pin is the widest).
+    return { paddingTopLeft: [GROUP_W / 2 + 4, top + PIN_H - 8] as L.PointTuple, paddingBottomRight: [GROUP_W / 2 + 4, sheet + 12] as L.PointTuple }
+  }
   const fitVisible = (animate: boolean) => {
     userMoved.current = false
     if (!visible.length) {
       map.setView(HK_CENTER, HK_ZOOM, { animate })
       return
     }
-    const size = map.getSize()
-    const top = map.getContainer().parentElement?.querySelector<HTMLElement>('.map-top')?.offsetHeight ?? 130
-    const sheet = Math.min(sheetRef.current, size.y * 0.6)
     const b = L.latLngBounds(visible.map((s) => [s.lat, s.lng] as L.LatLngTuple))
-    // Pins are 64×48 and anchored at their bottom centre, so pad by the pin size too.
-    map.fitBounds(b, {
-      paddingTopLeft: [PIN_W / 2 + 6, top + PIN_H - 8],
-      paddingBottomRight: [PIN_W / 2 + 6, sheet + 12],
-      maxZoom: FIT_MAX_ZOOM,
-      animate,
-      duration: 0.6,
-    })
+    map.fitBounds(b, { ...fitPadding(), maxZoom: FIT_MAX_ZOOM, animate, duration: 0.6 })
   }
   const fitRef = useRef(fitVisible)
   fitRef.current = fitVisible
@@ -365,6 +400,35 @@ function MapEffects({
     first.current = false
     if (!selected) fitVisible(animate)
   }, [visibleKey, flyDistrict]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A tapped group pin: zoom to fit its members so they show as separate price pins (RF-12).
+  useEffect(() => {
+    if (!groupTap) return
+    const members = visible.filter((s) => groupTap.ids.includes(s.id))
+    if (members.length < 2) return
+    userMoved.current = true // keep this view on resize
+    const b = L.latLngBounds(members.map((s) => [s.lat, s.lng] as L.LatLngTuple))
+    // Members will show as price pins after the zoom, so pad for those (narrower than a group pin).
+    const pad = { ...fitPadding() }
+    pad.paddingTopLeft = [PIN_W / 2 + 6, pad.paddingTopLeft[1]]
+    pad.paddingBottomRight = [PIN_W / 2 + 6, pad.paddingBottomRight[1]]
+    const fitZoom = Math.min(FIT_MAX_ZOOM, map.getBoundsZoom(b, false, L.point(pad.paddingTopLeft).add(pad.paddingBottomRight)))
+    if (fitZoom > map.getZoom()) map.fitBounds(b, { ...pad, maxZoom: FIT_MAX_ZOOM, duration: 0.6 })
+    else if (map.getZoom() < map.getMaxZoom()) flyTo(b.getCenter(), map.getZoom() + 1)
+    else onGroupStuck(groupTap.ids)
+  }, [groupTap?.n]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Report the zoom level (integer steps) so pins regroup after every zoom.
+  const zoomRef = useRef(onZoom)
+  zoomRef.current = onZoom
+  useEffect(() => {
+    const report = () => zoomRef.current(Math.round(map.getZoom()))
+    report()
+    map.on('zoomend', report)
+    return () => {
+      map.off('zoomend', report)
+    }
+  }, [map])
 
   useEffect(() => {
     const onClick = () => tapRef.current()

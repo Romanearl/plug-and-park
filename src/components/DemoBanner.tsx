@@ -5,6 +5,7 @@ import { DEMO_ACCOUNTS, DEMO_CARDS, DEMO_OTP, DEMO_PASSWORD } from '../data/seed
 import { navigate } from '../lib/router'
 import { platformApprove, platformRequestChanges } from '../lib/applyActions'
 import { completeSession } from '../lib/bookingActions'
+import { setMapStyle, useMapStyle } from '../lib/mapStyle'
 import { resetDemo, signIn, useCurrentUser, useDB } from '../lib/store'
 import { BottomSheet } from './BottomSheet'
 import { IN_IFRAME } from './PhoneFrame'
@@ -32,6 +33,7 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const active = user ? db.bookings.find((b) => b.driverId === user.id && b.status === 'active') : undefined
   const inReview = db.spots.filter((s) => s.reviewStatus === 'in_review')
   const [confirmReset, setConfirmReset] = useState(false)
+  const mapStyle = useMapStyle()
 
   useEffect(() => {
     if (!open) setConfirmReset(false)
@@ -117,6 +119,19 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
             <Icon name="map" size={20} /> Open presenter view (two phones)
           </button>
         )}
+        {/* Projector safety switch: if the dark map washes out, switch both phones to the light one. */}
+        <div className="row" style={{ justifyContent: 'space-between', minHeight: 44 }}>
+          <span id="map-style-label" style={{ fontWeight: 600 }}>
+            Map style
+          </span>
+          <div className="segmented" role="group" aria-labelledby="map-style-label">
+            {(['dark', 'light'] as const).map((m) => (
+              <button key={m} className={mapStyle === m ? 'active' : undefined} aria-pressed={mapStyle === m} onClick={() => setMapStyle(m)}>
+                {m === 'dark' ? 'Dark' : 'Light'}
+              </button>
+            ))}
+          </div>
+        </div>
         {confirmReset ? (
           <button
             className="btn btn-danger block"

@@ -25,6 +25,7 @@ export function QrCode({ value, size = 200, label }: { value: string; size?: num
       aria-label={label ?? 'QR code'}
       data-qr={value}
     >
+      {/* Machine-readable: stays pure black on white (not themed) so every scanner and the QR check can read it. */}
       <rect width={n} height={n} fill="#fff" />
       <path d={path} fill="#000" />
     </svg>

@@ -34,7 +34,7 @@ const asDriver = (ctx) => ctx.addInitScript(() => {
     m = await res.json()
   } catch {}
   check('Manifest is valid JSON', res.ok && !!m)
-  check('Manifest: name, short_name, standalone, black theme/background', m?.name === 'Plug & Park' && !!m?.short_name && m?.display === 'standalone' && m?.theme_color === '#000000' && m?.background_color === '#000000')
+  check('Manifest: name, short_name, standalone, navy theme/background (RF-14)', m?.name === 'Plug & Park' && !!m?.short_name && m?.display === 'standalone' && m?.theme_color === '#102A43' && m?.background_color === '#102A43')
   check('Manifest: start_url and scope under /plug-and-park/', m?.start_url?.startsWith('/plug-and-park/') && m?.scope === '/plug-and-park/')
   for (const icon of m?.icons ?? []) {
     const r = await fetch(new URL(icon.src, BASE).href)
@@ -75,7 +75,7 @@ const asDriver = (ctx) => ctx.addInitScript(() => {
 
   // Generated placeholder JPEG (never written to public/): served through a route instead.
   const gen = await browser.newPage({ viewport: { width: 600, height: 400 } })
-  await gen.setContent('<div style="width:600px;height:400px;background:linear-gradient(135deg,#3e5f8a,#eaf0f8)"></div>')
+  await gen.setContent('<div style="width:600px;height:400px;background:linear-gradient(135deg,#2b66a8,#e8f1fc)"></div>')
   const jpeg = await gen.screenshot({ type: 'jpeg', quality: 70 })
   await gen.close()
   const c2 = await browser.newContext({ viewport: { width: 390, height: 844 } })
@@ -202,8 +202,8 @@ const asDriver = (ctx) => ctx.addInitScript(() => {
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
   }
   const ratio = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05)
-  check('Contrast: --muted on --surface ≥ 4.5', ratio('#6b6b6b', '#f3f3f3') >= 4.5, ratio('#6b6b6b', '#f3f3f3').toFixed(2))
-  check('Contrast: --blue-deep on white ≥ 4.5, black on --blue ≥ 4.5', ratio('#3e5f8a', '#ffffff') >= 4.5 && ratio('#000000', '#7399c6') >= 4.5)
+  check('Contrast: --muted on --surface ≥ 4.5', ratio('#55657a', '#f4f7fa') >= 4.5, ratio('#55657a', '#f4f7fa').toFixed(2))
+  check('Contrast: --blue-deep on white ≥ 4.5, navy on --blue ≥ 4.5', ratio('#2b66a8', '#ffffff') >= 4.5 && ratio('#102a43', '#68a8e8') >= 4.5)
   check('Contrast: amber badge text on its tint ≥ 4.5', ratio('#a35f00', '#fff4e0') >= 4.5, ratio('#a35f00', '#fff4e0').toFixed(2))
   await ctx.close()
 }

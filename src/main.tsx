@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
 import './styles/app.css'
+import './lib/mapStyle' // applies the saved map style (dark / light) before the first render
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

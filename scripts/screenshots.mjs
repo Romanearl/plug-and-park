@@ -186,10 +186,9 @@ async function waitForMap(page) {
 // Taps a spot's price pin; if it is merged into a group pin (RF-12), taps the group first to zoom in.
 const tapPin = async (page, id) => {
   const own = page.locator(`.pin[data-spot="${id}"]`)
-  if (!(await own.count())) {
-    await page.locator(`.pin[data-spots~="${id}"]`).click()
-    await own.waitFor()
-    await page.waitForTimeout(900)
+  for (let i = 0; i < 5 && !(await own.count()); i++) {
+    await page.locator(`.pin[data-spots~="${id}"]`).click() // each tap zooms further in
+    await page.waitForTimeout(1300)
   }
   await own.click()
 }
@@ -308,6 +307,17 @@ scenarios.push(
       await page.locator('#reviews').evaluate((el) => el.scrollIntoView({ block: 'end' }))
       await page.locator('.scroll').evaluate((el) => el.scrollBy(0, -420))
     },
+  },
+  {
+    // RF-14: the projector safety switch (Demo sheet → Map style → Light).
+    session: 'S3',
+    file: '14-map-light-style',
+    route: '#/app',
+    init: async (context) => {
+      await asDriver(context)
+      await context.addInitScript(() => localStorage.setItem('pp.mapStyle', 'light'))
+    },
+    setup: waitForMap,
   },
 )
 

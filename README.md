@@ -84,4 +84,4 @@ Claude outputs1/  plan, task files, reports, screenshots, demo-kit/
 - **Photo credits:** see `public/photos/README.md` for how to add photos. *(None yet — all spot images are generated illustrations.)*
 
 ## Team
-Built by **Group 2, IIMT 2601 (HKU)
+Built by Group 2, IIMT 2601 (HKU)

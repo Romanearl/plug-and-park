@@ -22,7 +22,8 @@ const URL = opt('url', null)
 const SIZE = opt('size', null)
 const QUICK = args.includes('--quick')
 const BASE = URL ? (URL.endsWith('/') ? URL : URL + '/') : LOCAL
-const IGNORE = /tile\.openstreetmap|basemaps\.cartocdn|fonts\.g|ERR_FAILED|net::ERR/
+// mozPressure / mozInputSource: Firefox-only deprecation notes triggered inside Leaflet when a pin is tapped (harmless, not our code).
+const IGNORE = /tile\.openstreetmap|basemaps\.cartocdn|fonts\.g|ERR_FAILED|net::ERR|MouseEvent\.moz(Pressure|InputSource) is deprecated/
 const T = 8000
 
 function step(label) {
@@ -101,7 +102,8 @@ async function onePath(browser, run) {
   step('3 tomorrow 10:00 → unavailable → suggested 12:00 → pending')
   sheet = await requestSlot(D, '10:00')
   await sheet.getByText('This slot is no longer available').waitFor({ timeout: T })
-  const sugg = (await sheet.locator('.notice .btn').allTextContents()).map((t) => t.trim())
+  // Read through evaluate: locator.allTextContents() crashes the page in Playwright's Firefox build here.
+  const sugg = await sheet.locator('.notice').evaluate((el) => [...el.querySelectorAll('.btn')].map((b) => b.textContent.trim()))
   assert(sugg.join(',') === '09:00,12:00,12:30', `suggestions are 09:00, 12:00, 12:30 (got ${sugg.join(',')})`)
   await sheet.locator('.notice').getByRole('button', { name: '12:00', exact: true }).click()
   await sheet.getByRole('button', { name: /^Request booking ·/ }).click()

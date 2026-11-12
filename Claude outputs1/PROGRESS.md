@@ -1,4 +1,4 @@
-# Progress            Last updated: Thu 12 Nov 2026 07:20 HKT
+# Progress            Last updated: Thu 12 Nov 2026 12:20 HKT
 Repo: https://github.com/Romanearl/plug-and-park (public)
 Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 8519638 (RF-10)
 
@@ -16,9 +16,9 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 851
 
 ## Freeze
 - Tag: **v1.0-freeze** → commit d5bb4d7 (pushed, unchanged)
-- Tag: **v1.1-demo** → the final RF-10 commit (this PROGRESS update), pushed
+- Tag: **v1.1-demo** → commit f4356f3 (pushed; the only later commit corrects a timestamp in this file)
 - Live URL: https://romanearl.github.io/plug-and-park/
-- Last green smoke test on the live site: Thu 12 Nov 2026 07:20 HKT (Chromium, new demo path + presenter, against commit 8519638)
+- Last green smoke test on the live site: Thu 12 Nov 2026 12:20 HKT (Chromium, new demo path + presenter, against commit 8519638)
 - All sessions done (S1–S10). From now on: only REVIEW_FIXES.md bug fixes.
 
 ## Review fixes done

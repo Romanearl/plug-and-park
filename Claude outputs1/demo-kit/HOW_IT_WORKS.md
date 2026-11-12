@@ -34,8 +34,8 @@ A clickable phone app that runs in any browser at https://romanearl.github.io/pl
 | What if a driver overstays? | Bookings have a fixed end time. *Product idea:* an overstay fee per extra 15 minutes, charged to the card on file, plus a reminder notification 10 minutes before the end. |
 | How is the charger access secured? | The QR code and gate PIN are shown **only after payment**, and only to that driver. Owners can change the PIN at any time. *Product idea:* one-time PINs that work only during the booked slot. |
 | Why would owners trust strangers? | Owners see each driver's rating before approving, and they approve every booking. Payment is guaranteed before access is given. *Product idea:* ID-verified drivers and damage insurance. |
-| How is this different from existing charging apps? | Existing apps list public and commercial chargers. We unlock **idle private** chargers (village houses, industrial buildings) that sit unused 8–10 hours a day — a supply that isn't on any map today. |
-| Why 18%? | Within the 15–20% range of comparable peer-to-peer platforms; high enough to fund payments, support and insurance, low enough that owners keep about 79%. |
+| How is this different from existing charging apps? | Existing apps list public and commercial chargers. We unlock **idle private** chargers (village houses, industrial buildings) that sit unused 8–10 hours a day — a supply that existing charging apps don't list (team: confirm against the competitors in our report). |
+| Why 18%? | It's inside the 15–20% range set in our proposal; high enough to fund payments, support and insurance, low enough that owners keep about 79%. |
 | Does it work on my phone? | Yes. Scan the QR code; it runs in the browser. You can also "Add to Home Screen" so it opens like an app. |
 
 ## Credits

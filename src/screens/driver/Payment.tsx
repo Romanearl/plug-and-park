@@ -169,16 +169,31 @@ export function Payment({ id }: { id: string }) {
               autoCapitalize="words"
               placeholder="Chan Tai Man"
             />
-            <button
-              type="button"
-              className="btn btn-secondary block"
-              onClick={() => {
-                setDeclined(null)
-                f.fill({ number: '4242 4242 4242 4242', expiry: testExpiry(), cvc: '123', name: user?.name ?? '' })
-              }}
-            >
-              <Icon name="card" size={20} /> Use test card
-            </button>
+            {/* Demo shortcuts: one tap fills the success card or the declined card (RF-6). */}
+            <div className="row" style={{ gap: 10 }}>
+              <button
+                type="button"
+                className="btn btn-secondary sm"
+                style={{ flex: 1, minHeight: 44, paddingInline: 10 }}
+                onClick={() => {
+                  setDeclined(null)
+                  f.fill({ number: '4242 4242 4242 4242', expiry: testExpiry(), cvc: '123', name: user?.name ?? '' })
+                }}
+              >
+                <Icon name="card" size={18} /> Use test card
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary sm"
+                style={{ flex: 1, minHeight: 44, paddingInline: 10 }}
+                onClick={() => {
+                  setDeclined(null)
+                  f.fill({ number: '4000 0000 0000 0002', expiry: testExpiry(), cvc: '123', name: user?.name ?? '' })
+                }}
+              >
+                Use declined card
+              </button>
+            </div>
           </fieldset>
 
           <p className="caption row" style={{ gap: 8 }}>

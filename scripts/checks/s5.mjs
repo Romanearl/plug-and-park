@@ -110,6 +110,15 @@ const label = (p, l) => p.getByLabel(l, { exact: true })
   check('Declined: number/expiry/CVC cleared, name kept', (await label(p, 'Card number').inputValue()) === '' && (await label(p, 'Expiry').inputValue()) === '' && (await label(p, 'CVC').inputValue()) === '' && (await label(p, 'Name on card').inputValue()) === 'Chan Tai Man')
   check('Declined: booking stays confirmed (payable)', (await getBooking(p, id)).status === 'confirmed')
 
+  // RF-6: "Use declined card" fills the declined card in one tap
+  await p.getByRole('button', { name: 'Use declined card' }).click()
+  check('RF-6 "Use declined card" fills 4000 0000 0000 0002 + expiry + CVC + name, clears the banner',
+    (await label(p, 'Card number').inputValue()) === '4000 0000 0000 0002' && /^\d\d\/\d\d$/.test(await label(p, 'Expiry').inputValue()) && (await label(p, 'CVC').inputValue()) === '123' &&
+    (await label(p, 'Name on card').inputValue()) === 'Chan Tai Man' && (await p.getByText('Your card was declined. Try another card.').count()) === 0)
+  await p.getByRole('button', { name: 'Pay HK$30' }).click()
+  check('RF-6 the filled card is declined', await seen(p.getByText('Your card was declined. Try another card.'), 4000))
+  check('RF-6 booking still confirmed after the second decline', (await getBooking(p, id)).status === 'confirmed')
+
   // Success
   await p.getByRole('button', { name: 'Use test card' }).click()
   await p.getByRole('button', { name: 'Pay HK$30' }).click()

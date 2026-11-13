@@ -32,7 +32,10 @@ export function Payment({ id }: { id: string }) {
   const [processing, setProcessing] = useState(false)
   const [declined, setDeclined] = useState<string | null>(null)
   const alive = useRef(true)
-  useEffect(() => () => void (alive.current = false), [])
+  useEffect(() => {
+    alive.current = true // React's dev-mode double mount runs the cleanup once before the screen is really shown
+    return () => void (alive.current = false)
+  }, [])
 
   const f = useForm(
     { number: '', expiry: '', cvc: '', name: '' },

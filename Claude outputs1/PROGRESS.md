@@ -70,5 +70,10 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: dc5
 - `CLAUDE.md` §6 updated in the root and master copies (the task asks for it; the reviewer should confirm).
 - Needs Roman: re-add the home-screen shortcut on his iPhone to see the new icon; projector check of the light map.
 
+## More blue (Roman in chat, Fri 13 Nov 2026: "Add more blue to the app interface")
+- Every selected or active state is now blue: filter, sort, day, time and duration chips; role and payout cards (`--blue` fill, black text, 7:1); active tab, text links, switches, checkbox, price slider, current booking step (`--blue-deep`); sheet handles and progress bars (`--blue`). Primary buttons, map pins and the landing page stay black. CSS only (`src/styles/app.css`), commit 7eef699.
+- `contrast.mjs` updated (selected chip/slot/sort blue, handle blue, tab and switch deep blue). check 12/12, smoke Chromium/WebKit/Firefox pass, all sessions re-shot, demo kit regenerated.
+- **Proposed `CLAUDE.md` §6 change (for the reviewer; I did not edit CLAUDE.md):** replace "Selected chips, slots and tabs are black with white text." with "Selected chips, time slots, duration and sort options: `--blue` fill with black text. Active tab, links, switches, checkboxes, sliders and the current step: `--blue-deep`. Sheet handles and progress bars: `--blue`. Primary buttons and map pins stay black. Never white text on `--blue` except the wordmark." and change `.chip.active (black, white text)` to `(blue, black text)`.
+
 ## Skipped / needs a human
 - (none)

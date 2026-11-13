@@ -58,7 +58,8 @@ export const hk2 = (n: number) => `HK$${n.toFixed(2)}`
 /** FPS ID: an 8-digit HK mobile (4–9 first) or an email. */
 export function validateFpsId(v: string): string | null {
   const s = v.trim()
-  const digits = s.replace(/[\s-]/g, '').replace(/^\+?852/, '')
+  // "+852 9123 4567" and "852 9123 4567" carry the area code; a plain 8-digit number that happens to start with 852 doesn't.
+  const digits = s.replace(/[\s-]/g, '').replace(/^(\+852|852(?=\d{8}$))/, '')
   if (/^[4-9]\d{7}$/.test(digits)) return null
   if (/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[a-z]{2,}$/i.test(s)) return null
   return 'Enter an 8-digit HK mobile number or an email'

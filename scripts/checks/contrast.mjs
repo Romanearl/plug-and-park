@@ -178,7 +178,11 @@ const report = async (name, p) => {
   // Leaflet's own #ddd shows while tiles load, as before RF-14 (the navy override was an RF-14 addition).
   check('Map container background is light grey (seen while tiles load or fail)', mapBg === 'rgb(221, 221, 221)' || mapBg === 'rgb(233, 238, 243)', mapBg)
   const chip = await colours(p.locator('.chip.active').first())
-  check('Selected filter chip: black with white text', chip.bg === BLACK && chip.color === WHITE_RGB, JSON.stringify(chip))
+  check('Selected filter chip: blue with black text ("more blue", 13 Nov)', chip.bg === BLUE_RGB && chip.color === BLACK, JSON.stringify(chip))
+  const seg = await colours(p.locator('.segmented button.active').first())
+  check('Selected sort option: blue with black text', seg.bg === BLUE_RGB && seg.color === BLACK, JSON.stringify(seg))
+  const handle = await p.locator('.snap-sheet .sheet-handle').evaluate((el) => getComputedStyle(el).backgroundColor)
+  check('Sheet handle is blue', handle === BLUE_RGB, handle)
   await report('Map', p)
 
   await p.locator('.spot-card[data-spot="sp_shatin_1"]').click()
@@ -195,7 +199,7 @@ const report = async (name, p) => {
   await sheet.getByRole('button', { name: '13:00', exact: true }).click()
   await p.waitForTimeout(400)
   const slot = await colours(sheet.locator('.time-chip.active'))
-  check('Selected time slot: black fill, white text', slot.bg === BLACK && slot.color === WHITE_RGB, JSON.stringify(slot))
+  check('Selected time slot: blue fill, black text', slot.bg === BLUE_RGB && slot.color === BLACK, JSON.stringify(slot))
   await report('Booking sheet', p)
 
   await p.evaluate(() => {
@@ -245,7 +249,11 @@ const report = async (name, p) => {
   check('Weekly chart: today blue, other days light grey', bars[6] === BLUE_RGB && bars.slice(0, 6).every((f) => f === 'rgb(217, 217, 217)'), bars.join(' '))
   await report('Owner earnings', p)
   const tab = await p.locator('.tab.active').evaluate((el) => getComputedStyle(el).color)
-  check('Active tab is black', tab === BLACK, tab)
+  check('Active tab is deep blue', tab === 'rgb(62, 95, 138)', tab)
+  await p.goto(BASE + '#/owner/spots')
+  await p.locator('.owner-spot').first().waitFor()
+  const sw = await p.locator('.switch input:checked + .switch-track').first().evaluate((el) => getComputedStyle(el).backgroundColor)
+  check('Switch that is on is deep blue (white thumb stays readable)', sw === 'rgb(62, 95, 138)', sw)
   await ctx.close()
 }
 

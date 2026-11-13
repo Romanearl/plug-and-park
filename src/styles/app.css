@@ -163,7 +163,7 @@ svg { display: block; flex-shrink: 0; }
   font-size: 14px; font-weight: 600; white-space: nowrap;
   transition: background-color 150ms, color 150ms;
 }
-.chip.active { background: var(--ink); color: #fff; }
+.chip.active { background: var(--blue); color: var(--ink); }
 
 .badge {
   display: inline-flex; align-items: center; gap: 4px;
@@ -192,7 +192,7 @@ svg { display: block; flex-shrink: 0; }
   box-shadow: var(--shadow-sheet);
   animation: slide-up 280ms var(--ease);
 }
-.sheet-handle { width: 40px; height: 5px; border-radius: 3px; background: #d4d4d4; margin: 8px auto 4px; flex-shrink: 0; }
+.sheet-handle { width: 40px; height: 5px; border-radius: 3px; background: var(--blue); margin: 8px auto 4px; flex-shrink: 0; }
 .sheet-head { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px var(--gutter); flex-shrink: 0; }
 .sheet-body { overflow-y: auto; padding: 4px var(--gutter) calc(20px + var(--safe-bottom, 0px)); scrollbar-width: none; }
 .sheet-body::-webkit-scrollbar { display: none; }
@@ -397,7 +397,7 @@ svg { display: block; flex-shrink: 0; }
   background: var(--surface); border: 2px solid #cfcfcf; color: #fff;
   transition: background-color 150ms, border-color 150ms;
 }
-.checkbox input:checked + .box { background: var(--ink); border-color: var(--ink); }
+.checkbox input:checked + .box { background: var(--blue-deep); border-color: var(--blue-deep); }
 .checkbox input:focus-visible + .box { outline: 3px solid var(--blue); outline-offset: 2px; }
 .checkbox.invalid .box { border-color: var(--danger); }
 
@@ -409,12 +409,12 @@ svg { display: block; flex-shrink: 0; }
   transition: border-color 150ms, background-color 150ms, transform 120ms var(--ease);
 }
 .role-card:active { transform: scale(0.98); }
-.role-card.selected { border-color: var(--ink); background: var(--bg); }
+.role-card.selected { border-color: var(--blue-deep); background: var(--blue-tint); }
 .role-icon {
   display: inline-flex; align-items: center; justify-content: center;
   width: 44px; height: 44px; border-radius: 12px; background: var(--bg); margin-bottom: 10px;
 }
-.role-card.selected .role-icon { background: var(--blue-tint); color: var(--blue-deep); }
+.role-card.selected .role-icon { background: var(--blue); color: var(--ink); }
 .role-title { font-size: 16px; font-weight: 700; }
 .role-sub { font-size: 13px; color: var(--muted); line-height: 1.3; }
 .role-check {
@@ -429,7 +429,7 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
 
 .text-link {
   background: none; border: 0; padding: 0; min-height: 32px;
-  font-size: 15px; font-weight: 600; color: var(--ink);
+  font-size: 15px; font-weight: 600; color: var(--blue-deep);
   text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
 }
 
@@ -509,7 +509,7 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   border: 0; background: none; color: var(--muted); font-size: 11px; font-weight: 600;
 }
-.tab.active { color: var(--ink); }
+.tab.active { color: var(--blue-deep); }
 
 .avatar.lg { width: 64px; height: 64px; font-size: 26px; }
 .avatar.sm { width: 32px; height: 32px; font-size: 13px; }
@@ -588,7 +588,7 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
 }
 .chip-row::-webkit-scrollbar { display: none; }
 .chip-row .chip { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); flex-shrink: 0; }
-.chip-row .chip.active { background: var(--ink); }
+.chip-row .chip.active { background: var(--blue); }
 .map-banner {
   display: flex; align-items: center; gap: 8px; margin: 10px var(--gutter) 0; padding: 10px 14px;
   border-radius: var(--r-md); background: var(--warning-tint); color: var(--warning); font-size: 14px; font-weight: 600;
@@ -617,7 +617,7 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
   height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-pill); background: none;
   font-size: 13px; font-weight: 600; color: var(--muted);
 }
-.segmented button.active { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.segmented button.active { background: var(--blue); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
 
 .spot-list { list-style: none; margin: 8px 0 0; padding: 0; }
 .spot-card {
@@ -701,7 +701,7 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
   height: 44px; border: 0; border-radius: var(--r-md); background: var(--surface);
   font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink);
 }
-.time-chip.active { background: var(--ink); color: #fff; }
+.time-chip.active { background: var(--blue); color: var(--ink); }
 .time-chip:disabled { color: var(--muted-2); background: transparent; text-decoration: line-through; cursor: not-allowed; }
 .summary-card { margin-top: 20px; padding: 14px 16px; border-radius: var(--r-lg); background: var(--blue-tint); }
 .notice { margin-top: 20px; padding: 14px 16px; border-radius: var(--r-lg); animation: rise 240ms var(--ease); }
@@ -724,7 +724,7 @@ fieldset[aria-invalid] .role-card, .role-grid[aria-invalid] .role-card { border-
 }
 .stepper li.done .dot { background: var(--blue); color: var(--ink); }
 .stepper li.done { color: var(--ink-3); }
-.stepper li.current .dot { background: var(--ink); }
+.stepper li.current .dot { background: var(--blue-deep); }
 .stepper li.current { color: var(--ink); }
 .stepper li.failed .dot { background: var(--danger); color: #fff; }
 .stepper li.failed { color: var(--danger); }
@@ -872,14 +872,14 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
 .switch-track { width: 52px; height: 32px; border-radius: 16px; background: #d0d0d0; position: relative; transition: background-color 180ms; }
 .switch-track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform 180ms var(--ease); }
-.switch input:checked + .switch-track { background: var(--ink); }
+.switch input:checked + .switch-track { background: var(--blue-deep); }
 .switch input:checked + .switch-track::after { transform: translateX(20px); }
 .switch input:focus-visible + .switch-track { outline: 3px solid var(--blue); outline-offset: 2px; }
 
 .manage-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
 .stepper-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
 .icon-btn:disabled { opacity: .35; }
-.range { width: 100%; margin-top: 12px; accent-color: var(--ink); }
+.range { width: 100%; margin-top: 12px; accent-color: var(--blue-deep); }
 .sched-list { list-style: none; margin: 12px 0 0; padding: 0; }
 .sched-row { padding: 10px 0; border-bottom: 1px solid var(--line); }
 .sched-row.off span { color: var(--muted); }
@@ -900,7 +900,7 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
 .app-card.green > .row { color: var(--success); }
 .pulse-dot.small { width: 12px; height: 12px; }
 .progress { height: 6px; margin-top: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
-.progress span { display: block; height: 100%; border-radius: 3px; background: var(--ink); transition: width 280ms var(--ease); }
+.progress span { display: block; height: 100%; border-radius: 3px; background: var(--blue); transition: width 280ms var(--ease); }
 .role-card.tight { min-height: 64px; justify-content: center; }
 .mini-map { position: relative; height: 200px; border-radius: var(--r-lg); overflow: hidden; background: #e9eef3; }
 .mini-map .leaflet-tile-pane { filter: var(--map-filter); }
@@ -918,7 +918,7 @@ select.input { appearance: none; background-image: linear-gradient(45deg, transp
 .timeline li.done { color: var(--ink); }
 .timeline li.done .dot { background: var(--blue); }
 .timeline li.current { color: var(--ink); }
-.timeline li.current .dot { background: var(--ink); box-shadow: 0 0 0 4px var(--blue-tint); }
+.timeline li.current .dot { background: var(--blue-deep); box-shadow: 0 0 0 4px var(--blue-tint); }
 .admin-list { list-style: none; margin: 8px 0 0; padding: 0; }
 .admin-list li { padding: 12px; border-radius: var(--r-md); background: var(--surface); }
 .admin-list li + li { margin-top: 8px; }

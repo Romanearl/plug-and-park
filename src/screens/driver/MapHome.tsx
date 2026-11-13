@@ -3,7 +3,7 @@
 
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import { BottomSheet } from '../../components/BottomSheet'
 import { Icon } from '../../components/Icon'
@@ -442,6 +442,17 @@ function MapEffects({
       map.off('dragstart', onDrag)
     }
   }, [map])
+
+  // Leaving the screen in the middle of a zoom animation (e.g. pick a district, then tap another tab at once):
+  // Leaflet keeps a 250 ms timer for the animation and doesn't cancel it when the map is removed, so the timer
+  // then fired on a map without panes and threw. Marking the animation as over makes that timer a no-op.
+  // A layout effect, so it runs before react-leaflet removes the map.
+  useLayoutEffect(
+    () => () => {
+      ;(map as unknown as { _animatingZoom: boolean })._animatingZoom = false
+    },
+    [map],
+  )
 
   // The map container can change size (frame scaling, sheet) — keep Leaflet in sync.
   useEffect(() => {

@@ -36,18 +36,24 @@ export function navigate(to: string, opts: { replace?: boolean } = {}) {
     window.history.replaceState(window.history.state, '', url)
     window.dispatchEvent(new HashChangeEvent('hashchange'))
   } else if (window.location.hash !== target) {
-    depth++
-    window.location.hash = target
+    // Each pushed screen remembers how many in-app screens are behind it (see `back`).
+    const url = `${window.location.pathname}${window.location.search}${target}`
+    window.history.pushState({ ppDepth: depthHere() + 1 }, '', url)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
   }
 }
 
-// Count in-app pushes so `back()` never leaves the app (e.g. after opening a deep link).
-let depth = 0
+// How many screens the app itself pushed before the current history entry. It lives in the entry's
+// state, so it stays right after the browser's own Back / Forward and after a reload — a plain counter
+// drifted there, and the in-app back button could then leave the app.
+function depthHere(): number {
+  const d = (window.history.state as { ppDepth?: unknown } | null)?.ppDepth
+  return typeof d === 'number' ? d : 0
+}
 
 /** Go back in history if we navigated inside the app; otherwise go to `fallback`. */
 export function back(fallback = '/') {
-  if (depth > 0) {
-    depth--
+  if (depthHere() > 0) {
     nextKind = 'back'
     window.history.back()
   } else {

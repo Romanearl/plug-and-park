@@ -38,7 +38,9 @@ const HK_BOUNDS = L.latLngBounds([21.6, 113.2], [23.1, 115.0])
 // CARTO's basemaps now return an "API key required" watermark, so we use the standard
 // OpenStreetMap tiles (no key) and mute them with CSS (.map .leaflet-tile-pane) for a Positron-like look.
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-const ATTRIBUTION = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+// Opens in a new tab: inside the presenter view the app runs in an iframe, and following the link there
+// would replace the phone with a page that refuses to load in a frame.
+const ATTRIBUTION = '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
 
 // Map UI state survives a trip to spot details and back.
 interface UiState {

@@ -26,7 +26,7 @@ const asDriver = (ctx) => ctx.addInitScript(() => {
 // ── 1. Web app manifest + icons under the /plug-and-park/ base ──
 {
   const html = await (await fetch(BASE)).text()
-  check('index.html links the manifest and apple-touch-icon under /plug-and-park/', html.includes('href="/plug-and-park/manifest.webmanifest"') && html.includes('href="/plug-and-park/icons/apple-touch-icon.png"'))
+  check('index.html links the manifest and apple-touch-icon under /plug-and-park/', /href="\/plug-and-park\/manifest\.webmanifest(\?v=\d+)?"/.test(html) && /href="\/plug-and-park\/icons\/apple-touch-icon\.png(\?v=\d+)?"/.test(html)) // ?v= busts the icon cache (new app icon)
   check('iOS standalone meta tags', html.includes('apple-mobile-web-app-capable') && html.includes('apple-mobile-web-app-status-bar-style'))
   const res = await fetch(BASE + 'manifest.webmanifest')
   let m = null

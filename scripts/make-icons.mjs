@@ -1,26 +1,29 @@
-// One-off: renders the app icon (navy bolt on --blue) to PNGs for the web app manifest.
-// The final logo is being designed separately: replace the SVG below (and public/favicon.svg), then re-run.
-//   node scripts/make-icons.mjs   → public/icons/icon-192.png, icon-512.png, apple-touch-icon.png (180)
+// Copies Roman's app icon from "Claude outputs1/app-icon/" into public/. It never draws an icon itself.
+//   node scripts/make-icons.mjs
+// The files are shipped byte-for-byte (scripts/checks/icon.mjs verifies it). After changing the icon,
+// bump the ?v= number in index.html and public/manifest.webmanifest so phones drop the cached one.
 import fs from 'node:fs'
 import path from 'node:path'
-import { chromium } from 'playwright'
 import { ROOT } from './lib/server.mjs'
 
-// Full-bleed square (no transparent corners) so it also works as a maskable icon; the bolt sits
-// inside the central 80% safe zone.
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#68A8E8"/>
-  <path d="M286 92 150 284h98l-28 136 142-200h-98l22-128z" fill="#102A43"/>
-</svg>`
-
-const out = path.join(ROOT, 'public', 'icons')
-fs.mkdirSync(out, { recursive: true })
-const browser = await chromium.launch()
-for (const [name, size] of [['icon-192.png', 192], ['icon-512.png', 512], ['apple-touch-icon.png', 180]]) {
-  const page = await browser.newPage({ viewport: { width: size, height: size } })
-  await page.setContent(`<html><body style="margin:0">${svg.replace('<svg ', `<svg width="${size}" height="${size}" `)}</body></html>`)
-  await page.screenshot({ path: path.join(out, name), omitBackground: false })
-  await page.close()
-  console.log('wrote', name)
+export const ICON_SOURCE = path.join(ROOT, 'Claude outputs1', 'app-icon')
+/** Source file name → path inside public/. */
+export const ICON_FILES = {
+  'favicon.svg': 'favicon.svg',
+  'favicon-32.png': 'icons/favicon-32.png',
+  'favicon-16.png': 'icons/favicon-16.png',
+  'apple-touch-icon.png': 'icons/apple-touch-icon.png',
+  'icon-192.png': 'icons/icon-192.png',
+  'icon-512.png': 'icons/icon-512.png',
+  'icon-maskable-192.png': 'icons/icon-maskable-192.png',
+  'icon-maskable-512.png': 'icons/icon-maskable-512.png',
 }
-await browser.close()
+
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) {
+  for (const [from, to] of Object.entries(ICON_FILES)) {
+    const dest = path.join(ROOT, 'public', ...to.split('/'))
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
+    fs.copyFileSync(path.join(ICON_SOURCE, from), dest)
+    console.log('copied', from, '→ public/' + to)
+  }
+}

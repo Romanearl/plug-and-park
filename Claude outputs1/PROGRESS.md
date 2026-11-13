@@ -1,6 +1,6 @@
-# Progress            Last updated: Fri 13 Nov 2026 (code review done)
+# Progress            Last updated: Fri 13 Nov 2026 (colour revert + new app icon done)
 Repo: https://github.com/Romanearl/plug-and-park (public)
-Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: b3dde82 (RF-15)
+Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: dc5785c (COLOUR-REVERT)
 
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599
@@ -61,6 +61,14 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: b3d
 - Time-zone rule: always the device's local time.
 - New scripts in `scripts/review/`: `edges.mjs`, `monkey.mjs`, `demo10.mjs`, `longrun.mjs`, `wrapdiff.mjs`; `npm run smoke -- --tz <zone>`.
 - Needs Roman: real-phone test of the payment form, the projector check, and a decision about the personal email in the public commit history.
+
+## Colour revert + app icon (COLOUR_REVERT_AND_ICON_TASK.md) — done Fri 13 Nov 2026, tag v1.3-demo
+- Report: `COLOUR-REVERT_REPORT.md`. Pre-RF-14 black-and-blue colours restored (colour parts of RF-14 reverse-applied; every CR-* fix kept). Light map is the default; "Dark" is in the demo sheet.
+- Roman's "Plug & Park" logo is the favicon, iOS and PWA icon, copied byte-for-byte from `Claude outputs1/app-icon/` (`?v=2` cache buster). `make-icons.mjs` only copies.
+- `npm run check`: 12/12 files (new `icon.mjs` 43, rewritten `contrast.mjs` 56). Smoke: Chromium, WebKit, Firefox and live. Screenshots: all sessions re-shot plus `screenshots/COLOUR-REVERT/`. Demo kit regenerated.
+- KNOWN contrast (pre-RF-14 pairs): white on --blue 2.96:1 (wordmark), --success on --success-tint 4.26:1, --danger on --danger-tint 4.19:1.
+- `CLAUDE.md` §6 updated in the root and master copies (the task asks for it; the reviewer should confirm).
+- Needs Roman: re-add the home-screen shortcut on his iPhone to see the new icon; projector check of the light map.
 
 ## Skipped / needs a human
 - (none)

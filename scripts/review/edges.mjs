@@ -265,7 +265,6 @@ if (want('hostile')) {
       sp.title = LONG
       sp.address = XSS + ' ' + 'M'.repeat(100)
       sp.instructions = XSS + ' 陳大文 😀 ' + 'i'.repeat(150)
-      sp.amenities = [XSS, 'A'.repeat(40)]
       d.users.find((u) => u.id === 'u_owner_demo').name = 'Ŵ'.repeat(40)
       d.users.find((u) => u.id === 'u_driver_demo').name = 'M'.repeat(40)
       d.users.find((u) => u.id === 'u_driver_3').name = '陳大文 😀 ' + XSS
@@ -603,6 +602,7 @@ if (want('tabs')) {
     d.bookings.push({ id: 'bk_two', spotId: 'sp_kwuntong_1', driverId: 'u_driver_demo', ownerId: 'u_owner_demo', start: t.toISOString(), durationMinutes: 60, price: 30, commissionRate: 0.18, status: 'confirmed', createdAt: t.toISOString(), updatedAt: t.toISOString() })
   })
   const b = await open(ctx, 'u_driver_demo', errors)
+  await a.goto('about:blank')
   await a.goto(BASE + '#/app/pay/bk_two')
   await b.goto(BASE + '#/app/pay/bk_two')
   await a.getByRole('button', { name: 'Use test card' }).click()

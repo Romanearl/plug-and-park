@@ -55,6 +55,15 @@ export function back(fallback = '/') {
   }
 }
 
+/** A broken escape in a typed or pasted link (e.g. "%E0%A4%A") must not crash the app: keep it as it is. */
+function safeDecode(part: string): string {
+  try {
+    return decodeURIComponent(part)
+  } catch {
+    return part
+  }
+}
+
 /** Match "/app/spot/:id" against "/app/spot/3" → { id: "3" } (or null). */
 export function matchPath(pattern: string, path: string): Record<string, string> | null {
   const p = pattern.split('/').filter(Boolean)
@@ -62,7 +71,7 @@ export function matchPath(pattern: string, path: string): Record<string, string>
   if (p.length !== s.length) return null
   const params: Record<string, string> = {}
   for (let i = 0; i < p.length; i++) {
-    if (p[i].startsWith(':')) params[p[i].slice(1)] = decodeURIComponent(s[i])
+    if (p[i].startsWith(':')) params[p[i].slice(1)] = safeDecode(s[i])
     else if (p[i] !== s[i]) return null
   }
   return params

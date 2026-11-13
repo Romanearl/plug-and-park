@@ -4,6 +4,7 @@
 // npm run smoke -- --size 1920x1080     → run the single-phone path inside the frame at that size
 // npm run smoke -- --url https://romanearl.github.io/plug-and-park/   → against the live site
 // npm run smoke -- --quick              → skip the S7 branch/onboarding checks
+// npm run smoke -- --tz Europe/Moscow   → run with the browser in that time zone (the app uses the device's local time)
 // Two pages in one browser context (driver + owner) + the presenter view. Fails on any console error or warning.
 
 import { spawnSync } from 'node:child_process'
@@ -20,6 +21,8 @@ const RUNS = +opt('runs', '1')
 const BROWSER = opt('browser', 'chromium')
 const URL = opt('url', null)
 const SIZE = opt('size', null)
+const TZ = opt('tz', null)
+const tzOpt = TZ ? { timezoneId: TZ } : {}
 const QUICK = args.includes('--quick')
 const BASE = URL ? (URL.endsWith('/') ? URL : URL + '/') : LOCAL
 // mozPressure / mozInputSource: Firefox-only deprecation notes triggered inside Leaflet when a pin is tapped (harmless, not our code).
@@ -54,7 +57,7 @@ async function requestSlot(root, time) {
 
 async function onePath(browser, run) {
   const phone = SIZE ? { viewport: { width: +SIZE.split('x')[0], height: +SIZE.split('x')[1] } } : { viewport: { width: 390, height: 844 }, ...(BROWSER === 'firefox' ? {} : { isMobile: true, hasTouch: true }) }
-  const ctx = await browser.newContext(phone)
+  const ctx = await browser.newContext({ ...phone, ...tzOpt })
   const problems = []
   const watch = (p, who) => {
     p.on('pageerror', (e) => problems.push(`${who}: page error: ${e.message}`))
@@ -176,7 +179,7 @@ async function onePath(browser, run) {
 
 async function presenterPath(browser) {
   step('8 presenter view at 1280×720: request → approve → pay → charge → rate')
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } })
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, ...tzOpt })
   const problems = []
   const P = await ctx.newPage()
   P.on('pageerror', (e) => problems.push(`presenter: page error: ${e.message}`))
@@ -219,7 +222,7 @@ let failed = 0
 try {
   const browser = await playwright[BROWSER].launch()
   for (let run = 1; run <= RUNS; run++) {
-    console.log(`\n── smoke run ${run}/${RUNS} · ${BROWSER}${SIZE ? ' · ' + SIZE : ''} · ${URL ? 'LIVE ' + BASE : 'local build'}`)
+    console.log(`\n── smoke run ${run}/${RUNS} · ${BROWSER}${SIZE ? ' · ' + SIZE : ''}${TZ ? ' · ' + TZ : ''} · ${URL ? 'LIVE ' + BASE : 'local build'}`)
     const t0 = Date.now()
     try {
       const probs = [...(await onePath(browser, run)), ...(await presenterPath(browser))]

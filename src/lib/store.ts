@@ -109,6 +109,9 @@ export function getDB(): DB {
 
 /** Apply an immutable update to the database and persist it. */
 export function updateDB(fn: (draft: DB) => DB) {
+  // Another window may have saved something a moment ago whose `storage` event hasn't reached this one yet.
+  // Start from what is actually stored, so this save can't silently drop that change.
+  if (!storageBroken) db = parseDB(safeGet('local', DB_KEY)) ?? db
   db = fn(db)
   safeSet('local', DB_KEY, JSON.stringify(db))
   emit()

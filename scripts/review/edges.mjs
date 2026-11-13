@@ -508,6 +508,7 @@ if (want('sizes')) {
       } else {
         await p.goto(BASE + '#/owner/earnings')
         await p.getByRole('button', { name: 'Withdraw', exact: true }).click()
+        await p.waitForTimeout(600) // the sheet slides up
         const btn = await p.getByRole('button', { name: /^Withdraw HK\$/ }).boundingBox()
         if (!btn || btn.y + btn.height > h + 1) bad.push(`withdraw CTA below the fold (${JSON.stringify(btn)})`)
         const small = await p.evaluate(() => [...document.querySelectorAll('.sheet input, .sheet select')].filter((el) => parseFloat(getComputedStyle(el).fontSize) < 16).length)

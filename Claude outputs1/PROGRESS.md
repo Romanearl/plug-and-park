@@ -1,4 +1,4 @@
-# Progress            Last updated: Fri 13 Nov 2026 00:56 HKT
+# Progress            Last updated: Fri 13 Nov 2026 (code review done)
 Repo: https://github.com/Romanearl/plug-and-park (public)
 Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: b3dde82 (RF-15)
 
@@ -55,13 +55,12 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: b3d
 - Untracked files in "Claude outputs1/" that are not ours and were not committed: three Plug-and-Park-logos-*.pdf and "Claude outputs/CAES9920 2a 1 - scrambled.pptx". Never use `git add -A` on that folder.
 - Needs Roman: check the dark map on the classroom projector (fallback: Demo strip → Map style → Light).
 
-## Code review (CODE_REVIEW_TASK.md) — IN PROGRESS (started 13 Nov on Roman's instruction)
-- Baseline (commit 42e20bb): typecheck pass, build pass (index 404 kB / spots 153 kB / MapHome 14 kB / Apply 12 kB, no warnings), check 10/10 files (5 min 19 s), smoke chromium 119 s / webkit 121 s / firefox 98 s, live smoke pass.
-- Phases 1–2 done. Phase 3 drills: `scripts/review/edges.mjs` (tz, clock, nav, hostile, storage, net, sizes, taps, tabs, leak), `scripts/review/monkey.mjs`, `scripts/review/wrapdiff.mjs`.
-- Fixed and committed (each with checks in `scripts/checks/review.mjs`, 28 checks): CR-01 (P1) lost taps after leaving a form field · CR-02 broken %-escape crash · CR-03 wrong-shaped stored data crash · CR-04 lost update between two windows · CR-05 map credit link · CR-06 sheet focus steal · CR-07 dev-mode payment hang · CR-08 in-app back leaving the app · CR-09 long words cut off · CR-10 verify with missing account · CR-11 FPS IDs starting with 852.
-- Time-zone rule: always the device's local time (verified in Asia/Hong_Kong, Europe/Moscow, America/Los_Angeles).
-- Still to do: full check + 3-browser smoke on the fixes, push; monkey runs (both roles); demo path 10× in the presenter view; smoke in 3 time zones; 15-minute long-session run; deploy check + live smoke; tag `v1.2.1-review`; `CODE_REVIEW_REPORT.md`.
-- `Claude outputs1/screenshots/S8/main-flow.webm` shows as modified after `npm run check` (the S8 check re-records it); not committed yet.
+## Code review (CODE_REVIEW_TASK.md) — done Fri 13 Nov 2026, tag v1.2.1-review
+- Report: `CODE_REVIEW_REPORT.md`. 21 findings: 0 P0, 1 P1, 8 P2, 12 P3; all P1/P2 fixed (CR-01 … CR-12), 9 P3 listed with reasons.
+- `npm run check`: 11/11 files, 500 checks (new: `scripts/checks/review.mjs`, 30). Smoke: Chromium, WebKit, Firefox; three time zones; live site. Demo ×10 in the presenter view: 10/10.
+- Time-zone rule: always the device's local time.
+- New scripts in `scripts/review/`: `edges.mjs`, `monkey.mjs`, `demo10.mjs`, `longrun.mjs`, `wrapdiff.mjs`; `npm run smoke -- --tz <zone>`.
+- Needs Roman: real-phone test of the payment form, the projector check, and a decision about the personal email in the public commit history.
 
 ## Skipped / needs a human
 - (none)

@@ -97,6 +97,94 @@ async function press(p, loc, fy = 0.5) {
   await ctx2.close()
 }
 
+// CR-02 — a link with a broken %-escape crashed the whole app (blank page, "URI malformed").
+{
+  const ctx = await browser.newContext(PHONE)
+  const p = await page(ctx, 'u_driver_demo')
+  const before = errors.length
+  await p.goto(BASE + '#/app/spot/%E0%A4%A')
+  check('CR-02 #/app/spot/%E0%A4%A shows "no longer listed" instead of a blank page', (await seen(p.getByText('This charger is no longer listed'), 3000)) && errors.length === before, errors.slice(before).join(' | '))
+  await p.goto('about:blank')
+  await p.goto(BASE + '#/owner/spots/%ZZ')
+  check('CR-02 #/owner/spots/%ZZ (wrong role, broken escape) still lands on a real screen', await seen(p.locator('.map-home, .spot-card').first(), 5000))
+  await ctx.close()
+}
+
+// CR-03 — stored data with the right version but the wrong shape crashed every load until storage was cleared by hand.
+{
+  const bad = ['{"version":5}', '{"version":5,"users":[],"spots":{},"bookings":[],"reviews":[],"payouts":[]}', '{"version":5,"users":[],"spots":[],"bookings":[]}']
+  const ok = []
+  for (const value of bad) {
+    const ctx = await browser.newContext(PHONE)
+    const p = await page(ctx, 'u_driver_demo')
+    await p.addInitScript((v) => {
+      if (!sessionStorage.getItem('cr03')) {
+        sessionStorage.setItem('cr03', '1')
+        localStorage.setItem('pp.db', v)
+      }
+    }, value)
+    const before = errors.length
+    await p.goto(BASE + '#/app/bookings')
+    const rendered = await seen(p.locator('.booking-card, .empty-state').first(), 4000)
+    const d = await db(p)
+    ok.push(rendered && d.spots.length === 12 && d.users.length === 7 && errors.length === before)
+    await ctx.close()
+  }
+  check('CR-03 wrong-shaped stored data is replaced by fresh demo data (3 shapes)', ok.every(Boolean), ok.join(','))
+  // A second window writing such data must not take this one down either.
+  const ctx = await browser.newContext(PHONE)
+  const p = await page(ctx, 'u_driver_demo')
+  const q = await page(ctx, 'u_driver_demo')
+  await p.goto(BASE + '#/app/bookings')
+  await q.goto(BASE + '#/app/bookings')
+  await p.locator('.booking-card, .empty-state').first().waitFor()
+  const before = errors.length
+  for (const v of bad) {
+    await q.evaluate((v) => localStorage.setItem('pp.db', v), v)
+    await p.waitForTimeout(250)
+  }
+  await p.getByRole('tab', { name: 'Past' }).click({ timeout: 3000 }).catch(() => {})
+  check('CR-03 …also when another window writes it while this one is open', (await seen(p.locator('.booking-card').first(), 3000)) && errors.length === before, errors.slice(before).join(' | '))
+  await ctx.close()
+}
+
+// CR-04 — two windows saving at almost the same moment: the second one wrote its own (older) copy of the
+// data and silently dropped the first one's change. Simulated by delaying the storage events of the owner window.
+{
+  const ctx = await browser.newContext(PHONE)
+  const d = await page(ctx, 'u_driver_demo')
+  const o = await ctx.newPage()
+  o.on('pageerror', (e) => errors.push(e.message))
+  await o.addInitScript(() => {
+    try {
+      sessionStorage.getItem('pp.session.main') || sessionStorage.setItem('pp.session.main', 'u_owner_demo')
+    } catch {}
+    // This window hears about other windows' changes only when the test says so.
+    window.addEventListener('storage', (e) => window.__deaf && e.stopImmediatePropagation(), true)
+  })
+  await o.goto(BASE + '#/owner/spots')
+  await o.locator('.owner-spot[data-spot="sp_shatin_1"]').waitFor()
+  await o.evaluate(() => (window.__deaf = true))
+  await d.goto(BASE + '#/app/spot/sp_kwuntong_1')
+  await d.getByRole('button', { name: 'Request booking', exact: true }).click()
+  const s = d.getByRole('dialog', { name: 'Request booking' })
+  await s.getByRole('button', { name: 'Tomorrow', exact: true }).click()
+  await s.getByRole('button', { name: '13:00', exact: true }).click()
+  await s.getByRole('button', { name: /^Request booking ·/ }).click()
+  await d.locator('.status-card[data-status="pending"]').waitFor()
+  const id = d.url().split('/').pop()
+  // The owner window hasn't heard of the request yet, and saves a change of its own.
+  await o.locator('.owner-spot[data-spot="sp_shatin_1"] .switch').click()
+  await o.waitForTimeout(300)
+  const after = await db(o)
+  const kept = after.bookings.some((b) => b.id === id)
+  check('CR-04 a save from a window with stale data keeps the other window’s new booking', kept && after.spots.find((x) => x.id === 'sp_shatin_1').active === false, `booking kept: ${kept}`)
+  check('CR-04 …and the driver still sees the pending request', await seen(d.locator('.status-card[data-status="pending"]'), 1500))
+  await o.goto(BASE + '#/owner')
+  check('CR-04 …and it shows up for the owner', await seen(o.locator(`.request-card[data-booking="${id}"]`), 3000))
+  await ctx.close()
+}
+
 await browser.close()
 check('No console errors or warnings during the review checks', errors.length === 0, [...new Set(errors)].slice(0, 5).join(' | '))
 console.log(results.join('\n'))

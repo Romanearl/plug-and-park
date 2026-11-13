@@ -179,7 +179,7 @@ export function SpotDetails({ id }: { id: string }) {
                     <li key={r.id}>
                       <div className="row" style={{ gap: 10 }}>
                         <span className="avatar sm">{author?.name.trim()[0] ?? 'D'}</span>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontWeight: 600 }}>{author ? shortName(author.name) : 'Driver'}</div>
                           <div className="caption">{fmtDate(r.createdAt)}</div>
                         </div>

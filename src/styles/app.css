@@ -281,7 +281,8 @@ svg { display: block; flex-shrink: 0; }
   isolation: isolate;
 }
 .screen.dark-top { background: var(--ink); }
-.app-body { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+/* overflow-wrap: a name, title or address typed as one very long word wraps instead of running off the screen. */
+.app-body { position: relative; flex: 1; min-height: 0; overflow: hidden; overflow-wrap: break-word; }
 
 /* Fake iOS status bar */
 .status-bar {

@@ -3,7 +3,36 @@
 //   • after it has shown an error once, it re-validates live on every change
 //     (including changes to other fields it depends on, e.g. confirm ↔ password).
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+
+// A field usually loses focus because the user pressed something else. Showing its error right then
+// moves everything below it by a line while the finger (or mouse button) is still down, so the press
+// ends on a different element and the tap is lost ("Use test card" did nothing). So when a blur
+// happens during a press, the error is shown once that tap has finished.
+let pressing = false
+if (typeof window !== 'undefined') {
+  const up = () => window.setTimeout(() => (pressing = false), 0)
+  window.addEventListener('pointerdown', () => (pressing = true), true)
+  window.addEventListener('pointerup', up, true)
+  window.addEventListener('pointercancel', up, true)
+}
+const TAP_GRACE_MS = 400 // long enough for the click that follows a press; a held press shows the error anyway
+
+function afterTap(run: () => void) {
+  if (!pressing) return run()
+  let done = false
+  const finish = () => {
+    if (done) return
+    done = true
+    window.removeEventListener('click', onClick, true)
+    window.clearTimeout(timer)
+    run()
+  }
+  // The click's own handlers run first (e.g. "fill demo account" clears the errors), then this.
+  const onClick = () => window.setTimeout(finish, 0)
+  const timer = window.setTimeout(finish, TAP_GRACE_MS)
+  window.addEventListener('click', onClick, true)
+}
 
 export type Validators<V> = { [K in keyof V]: (value: V[K], all: V) => string | null }
 type Errors<V> = Partial<Record<keyof V, string | null>>
@@ -27,10 +56,16 @@ export function useForm<V extends Record<string, unknown>>(initial: V, validator
     })
   }
 
+  // The newest values, for a blur check that runs a moment later (see afterTap).
+  const latest = useRef(values)
+  latest.current = values
+
   const blur = (k: keyof V) => {
-    const err = check(k, values)
-    setShown((s) => ({ ...s, [k]: err }))
-    if (err) setLive((l) => ({ ...l, [k]: true }))
+    afterTap(() => {
+      const err = check(k, latest.current) // the tap may have just filled the form
+      setShown((s) => ({ ...s, [k]: err }))
+      if (err) setLive((l) => ({ ...l, [k]: true }))
+    })
   }
 
   /** Show every error. Returns true when the form is valid. */

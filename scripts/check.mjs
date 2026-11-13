@@ -1,4 +1,4 @@
-// npm run check            → build, start preview, run every scripts/checks/s*.mjs + contrast.mjs (RF-14)
+// npm run check            → build, start preview, run every scripts/checks/s*.mjs + contrast.mjs (RF-14) + review.mjs (code review)
 // npm run check -- s3      → only the named check file(s)
 // Exits non-zero if any check fails. The preview server is always stopped.
 
@@ -11,9 +11,9 @@ const dir = path.join(ROOT, 'scripts', 'checks')
 const only = process.argv.slice(2).map((s) => s.toLowerCase().replace(/\.mjs$/, ''))
 const files = fs
   .readdirSync(dir)
-  .filter((f) => /^s\d+\.mjs$/.test(f) || f === 'contrast.mjs')
+  .filter((f) => /^s\d+\.mjs$/.test(f) || f === 'contrast.mjs' || f === 'review.mjs')
   .filter((f) => only.length === 0 || only.includes(f.replace(/\.mjs$/, '')))
-  .sort((a, b) => (parseInt(a.slice(1)) || 99) - (parseInt(b.slice(1)) || 99))
+  .sort((a, b) => (parseInt(a.slice(1)) || 99) - (parseInt(b.slice(1)) || 99) || a.localeCompare(b))
 
 build()
 const stop = await startPreview()

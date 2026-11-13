@@ -9,6 +9,8 @@ Read this file at the start of every run. Then follow the **autonomous run proto
 > At the start of every run, if `Claude outputs1/CLAUDE.md` differs from the repo-root `CLAUDE.md`, copy the master over the root copy and mention it in the report. Never edit `PLAN.md`, the task files, `REVIEW_FIXES.md` or the master `CLAUDE.md` yourself; propose changes in your report instead.
 >
 > The folder name contains a space, so always quote it in shell commands and use `path.join` in scripts.
+>
+> **Files whose names start with `ON_HOLD_` are parked tasks. Never act on them, prepare them or list them as pending work.** Start one only when Roman explicitly names that file in the chat and tells you to start it.
 
 ## 1. What this is
 

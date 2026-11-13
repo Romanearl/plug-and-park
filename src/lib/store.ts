@@ -55,11 +55,14 @@ function safeSet(kind: 'local' | 'session', key: string, value: string | null) {
   }
 }
 
+/** Stored data is only used when it has the current version and all five lists; anything else re-seeds. */
 function parseDB(raw: string | null): DB | null {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw) as DB
-    return parsed && parsed.version === DB_VERSION ? parsed : null
+    if (!parsed || parsed.version !== DB_VERSION) return null
+    const lists = [parsed.users, parsed.spots, parsed.bookings, parsed.reviews, parsed.payouts]
+    return lists.every(Array.isArray) ? parsed : null
   } catch {
     return null
   }

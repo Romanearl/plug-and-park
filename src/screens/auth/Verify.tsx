@@ -53,7 +53,13 @@ export function Verify() {
       window.getSelection()?.removeAllRanges()
       const role = pendingRole(pending)
       const t = window.setTimeout(() => {
-        completeVerification(pending)
+        try {
+          completeVerification(pending)
+        } catch {
+          // The account disappeared meanwhile (the demo was reset in another window): back to log in.
+          navigate('/login', { replace: true })
+          return
+        }
         navigate(role === 'owner' ? '/owner' : '/app', { replace: true })
       }, 1100)
       return () => window.clearTimeout(t)

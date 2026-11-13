@@ -247,7 +247,7 @@ function RequestCard({
       </div>
       <div className="row" style={{ justifyContent: 'space-between', marginTop: 12 }}>
         <div>
-          <div className="money-in" style={{ fontWeight: 800, fontSize: 18 }}>You earn {hkd(earn)}</div>
+          <div style={{ fontWeight: 800, fontSize: 18 }}>You earn {hkd(earn)}</div>
           <div className="caption">after {Math.round(b.commissionRate * 100)}% service fee and 3% payment fee</div>
         </div>
       </div>

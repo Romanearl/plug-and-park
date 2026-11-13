@@ -104,9 +104,9 @@ export function Earnings() {
                     const today = i === 6
                     return (
                       <g key={i}>
-                        <rect x={x} y={110 - h} width="34" height={h} rx="6" fill={today ? 'var(--mint)' : 'var(--surface-2)'} stroke={today ? 'var(--mint-deep)' : 'none'} strokeWidth="1" />
+                        <rect x={x} y={110 - h} width="34" height={h} rx="6" fill={today ? 'var(--blue)' : '#d9d9d9'} />
                         {v > 0 && (
-                          <text x={x + 17} y={104 - h} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--ink)">
+                          <text x={x + 17} y={104 - h} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--ink-3)">
                             {Math.round(v)}
                           </text>
                         )}
@@ -164,7 +164,7 @@ export function Earnings() {
                               </div>
                             </div>
                             <span className="row" style={{ gap: 6 }}>
-                              <b className="money-in">{hk2(br.net)}</b>
+                              <b>{hk2(br.net)}</b>
                               <Icon name="chevron" size={18} className="tx-chevron" />
                             </span>
                           </button>

@@ -18,7 +18,7 @@ mk(KIT, 'screens', 'framed')
 mk(KIT, 'screens', 'flow')
 mk(ROOT, 'docs')
 
-const WORDMARK = `<div style="width:120px;height:120px;background:#68A8E8;color:#102A43;font:400 28px/1.02 'Libre Caslon Text',Georgia,serif;display:flex;flex-direction:column;justify-content:center;padding:0 16px;border-radius:10px"><span>Plug &amp;</span><span>Park</span></div>`
+const WORDMARK = `<div style="width:120px;height:120px;background:#7399c6;color:#fff;font:400 28px/1.02 'Libre Caslon Text',Georgia,serif;display:flex;flex-direction:column;justify-content:center;padding:0 16px;border-radius:10px"><span>Plug &amp;</span><span>Park</span></div>`
 const FONTS = `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Libre+Caslon+Text&display=swap" rel="stylesheet">`
 
 // Visible tap dot for recordings only (injected by this script, never shipped in the app).
@@ -53,10 +53,10 @@ async function qr(browser) {
   await QRCode.toFile(path.join(ROOT, 'docs', 'qr-live-demo.png'), LIVE, { width: 600, margin: 2 })
   const svg = await QRCode.toString(LIVE, { type: 'svg', margin: 2, color: { dark: '#000000', light: '#ffffff' } })
   const p = await browser.newPage({ viewport: { width: 1920, height: 1080 } })
-  await p.setContent(`<html><head>${FONTS}</head><body style="margin:0;width:1920px;height:1080px;background:#102A43;color:#fff;font-family:Inter,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:140px">
+  await p.setContent(`<html><head>${FONTS}</head><body style="margin:0;width:1920px;height:1080px;background:#000;color:#fff;font-family:Inter,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:140px">
     <div>${WORDMARK}<div style="font-size:96px;font-weight:800;letter-spacing:-.03em;margin-top:48px">Try it now</div>
-    <div style="font-size:34px;color:#A9B8C8;margin-top:18px;max-width:640px">Scan with your phone camera. Demo logins are in the “Demo” strip at the top.</div>
-    <div style="font-size:40px;font-weight:600;margin-top:44px;color:#68A8E8">romanearl.github.io/plug-and-park</div></div>
+    <div style="font-size:34px;color:#a9b4c2;margin-top:18px;max-width:640px">Scan with your phone camera. Demo logins are in the “Demo” strip at the top.</div>
+    <div style="font-size:40px;font-weight:600;margin-top:44px;color:#7399c6">romanearl.github.io/plug-and-park</div></div>
     <div style="width:600px;height:600px;background:#fff;border-radius:28px;display:flex;align-items:center;justify-content:center">${svg.replace('<svg', '<svg width="552" height="552"')}</div></body></html>`)
   await p.evaluate(() => document.fonts.ready)
   await p.waitForTimeout(800)
@@ -371,7 +371,7 @@ async function flows(browser) {
     await p.setContent(`<html><head>${FONTS}</head><body style="margin:0;background:#fff;font-family:Inter,Arial,sans-serif;padding:36px 60px">
       <div style="font-size:30px;font-weight:800;letter-spacing:-.02em">${title}</div>
       <div style="display:flex;align-items:flex-start;margin-top:26px">${steps
-        .map(([n, cap], i) => `<div style="width:236px;text-align:center"><img src="${img(n)}" style="width:236px;display:block"><div style="font-size:16px;font-weight:600;margin-top:12px"><span style="display:inline-block;width:26px;height:26px;border-radius:50%;background:#68A8E8;color:#102A43;font-size:14px;line-height:26px;margin-right:6px">${i + 1}</span>${cap}</div></div>${i < steps.length - 1 ? '<div style="width:64px;height:494px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#2B66A8">→</div>' : ''}`)
+        .map(([n, cap], i) => `<div style="width:236px;text-align:center"><img src="${img(n)}" style="width:236px;display:block"><div style="font-size:16px;font-weight:600;margin-top:12px"><span style="display:inline-block;width:26px;height:26px;border-radius:50%;background:#7399c6;color:#000;font-size:14px;line-height:26px;margin-right:6px">${i + 1}</span>${cap}</div></div>${i < steps.length - 1 ? '<div style="width:64px;height:494px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#3e5f8a">→</div>' : ''}`)
         .join('')}</div></body></html>`)
     await p.evaluate(() => document.fonts.ready)
     await p.waitForTimeout(500)

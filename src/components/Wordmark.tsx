@@ -1,9 +1,6 @@
 import { cx } from '../lib/util'
 
-/**
- * "Plug &" / "Park" stacked in serif, navy on a sky-blue square. Our own mark — not a copy of any logo.
- * The final logo is being designed separately: swap it in here (and in scripts/make-icons.mjs for the icons).
- */
+/** "Plug &" / "Park" stacked in serif, white on a blue square. Our own mark — not a copy of any logo. */
 export function Wordmark({ size = 'md', className }: { size?: 'sm' | 'md' | 'lg'; className?: string }) {
   return (
     <span className={cx('wordmark', size, className)} role="img" aria-label="Plug & Park">

@@ -106,13 +106,13 @@ export function Session({ id }: { id: string }) {
 
           <div className="ring-wrap" role="img" aria-label={`Battery ${st.batteryPct}%`} data-progress={st.progress.toFixed(2)}>
             <svg viewBox="0 0 220 220" width="220" height="220">
-              <circle cx="110" cy="110" r={R} fill="none" stroke="var(--ink-3)" strokeWidth="14" />
+              <circle cx="110" cy="110" r={R} fill="none" stroke="#1f2a37" strokeWidth="14" />
               <circle
                 cx="110"
                 cy="110"
                 r={R}
                 fill="none"
-                stroke="var(--mint)"
+                stroke="var(--blue)"
                 strokeWidth="14"
                 strokeLinecap="round"
                 strokeDasharray={C}

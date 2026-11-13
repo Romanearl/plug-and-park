@@ -8,18 +8,18 @@ import type { Spot } from '../data/types'
 type Scene = 'garage' | 'driveway' | 'industrial' | 'carpark'
 
 const C = {
-  ink: '#1B3A57',
-  ink3: '#2A4A68',
-  muted: '#7C8A9A',
-  line: '#C5D0DB',
-  surface: '#F4F7FA',
-  surface2: '#E1E7ED',
-  blue: '#68A8E8',
-  blueDeep: '#2B66A8',
-  blueTint: '#E8F1FC',
-  blueInk: '#102A43',
+  ink: '#1f1f1f',
+  ink3: '#333333',
+  muted: '#8f8f8f',
+  line: '#d9d9d9',
+  surface: '#f3f3f3',
+  surface2: '#e6e6e6',
+  blue: '#7399c6',
+  blueDeep: '#3e5f8a',
+  blueTint: '#eaf0f8',
+  blueInk: '#1c2f4a',
 }
-const CAR_COLOURS = [C.blueInk, C.blueDeep, C.ink3, '#A9B8C8', C.blue, '#55657A']
+const CAR_COLOURS = [C.blueInk, C.blueDeep, C.ink3, '#a9b4c2', C.blue, '#5a6573']
 
 function sceneFor(spot: Pick<Spot, 'propertyType' | 'photoSeed'>): Scene {
   switch (spot.propertyType) {
@@ -36,7 +36,7 @@ function sceneFor(spot: Pick<Spot, 'propertyType' | 'photoSeed'>): Scene {
 function Car({ x, y, s = 1, colour }: { x: number; y: number; s?: number; colour: string }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <ellipse cx="80" cy="2" rx="86" ry="6" fill="#102A43" opacity=".14" />
+      <ellipse cx="80" cy="2" rx="86" ry="6" fill="#000" opacity=".12" />
       <path d="M4 -14 Q2 -34 22 -38 L50 -42 Q66 -64 98 -64 L120 -64 Q140 -62 152 -40 Q164 -36 162 -14 Z" fill={colour} />
       <path d="M58 -42 Q70 -58 96 -58 L104 -58 L104 -42 Z M110 -58 L120 -58 Q134 -56 142 -42 L110 -42 Z" fill={C.blueTint} opacity=".85" />
       <circle cx="38" cy="-12" r="14" fill={C.ink} />
@@ -89,7 +89,7 @@ function Garage({ v, car }: { v: number; car: string }) {
     return (
       <>
         <rect width="390" height="260" fill={C.blueTint} />
-        <path d="M0 150 L120 110 L250 120 L390 90 L390 260 L0 260 Z" fill="#D5E3F2" />
+        <path d="M0 150 L120 110 L250 120 L390 90 L390 260 L0 260 Z" fill="#d8e3ef" />
         <rect x="70" y="70" width="250" height="150" fill="#fff" />
         <path d="M60 74 L195 20 L330 74 Z" fill={C.blueInk} />
         <rect x="130" y="120" width="130" height="100" fill={C.blue} />
@@ -120,7 +120,7 @@ function Driveway({ v, car }: { v: number; car: string }) {
     <>
       <rect width="390" height="260" fill={C.blueTint} />
       <circle cx={v === 2 ? 70 : 320} cy="56" r="22" fill="#fff" />
-      <path d="M0 140 Q90 110 180 130 T390 120 L390 260 L0 260 Z" fill="#CDDDEE" />
+      <path d="M0 140 Q90 110 180 130 T390 120 L390 260 L0 260 Z" fill="#cfdceb" />
       <rect x={v === 1 ? 210 : 20} y="90" width="160" height="110" fill="#fff" />
       <path d={v === 1 ? 'M200 94 L290 50 L380 94 Z' : 'M10 94 L100 50 L190 94 Z'} fill={C.blueDeep} />
       <rect x={v === 1 ? 236 : 46} y="120" width="36" height="30" fill={C.blueTint} />
@@ -144,15 +144,15 @@ function Driveway({ v, car }: { v: number; car: string }) {
 function Industrial({ v, car }: { v: number; car: string }) {
   return (
     <>
-      <rect width="390" height="260" fill="#94A2B1" />
+      <rect width="390" height="260" fill="#9aa3ad" />
       <rect y="0" width="390" height="48" fill={C.ink3} />
       {[50, 170, 290].map((x) => (
         <rect key={x} x={x} y="10" width="60" height="6" rx="3" fill="#fff" opacity=".85" />
       ))}
       {[0, 1, 2].map((i) => (
-        <rect key={i} x={v === 1 ? 20 + i * 140 : 90 + i * 140} y="48" width="26" height="160" fill="#C5D0DB" />
+        <rect key={i} x={v === 1 ? 20 + i * 140 : 90 + i * 140} y="48" width="26" height="160" fill="#c9cfd6" />
       ))}
-      <rect y="200" width="390" height="60" fill="#7C8A9A" />
+      <rect y="200" width="390" height="60" fill="#7c858f" />
       {[60, 200, 340].map((x) => (
         <rect key={x} x={x - (v === 2 ? 20 : 0)} y="206" width="5" height="54" fill="#fff" opacity=".8" />
       ))}
@@ -174,7 +174,7 @@ function Carpark({ v, car, bay }: { v: number; car: string; bay: number }) {
       {[60, 195, 330].map((x) => (
         <rect key={x} x={x - 30} y="16" width="60" height="5" rx="2.5" fill="#fff" />
       ))}
-      <rect y="190" width="390" height="70" fill="#CBD5DF" />
+      <rect y="190" width="390" height="70" fill="#cfd4da" />
       <rect x={v === 1 ? 250 : 20} y="60" width="80" height="130" fill={C.surface} />
       <text
         x={v === 1 ? 290 : 60}
@@ -190,7 +190,7 @@ function Carpark({ v, car, bay }: { v: number; car: string; bay: number }) {
       <rect x="0" y="186" width="390" height="6" fill={C.blue} />
       {v === 2 ? (
         <>
-          <path d="M80 260 L150 120 L240 120 L310 260 Z" fill="#B7C3CF" />
+          <path d="M80 260 L150 120 L240 120 L310 260 Z" fill="#bcc3cb" />
           <rect x="150" y="70" width="90" height="34" rx="6" fill={C.ink} />
           <text x="195" y="93" textAnchor="middle" fontFamily="Inter, Arial, sans-serif" fontWeight="700" fontSize="16" fill="#fff">
             EV only
@@ -295,11 +295,11 @@ function Illustration({
         <linearGradient id={`sp-light-${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff" stopOpacity={scene === 'driveway' ? 0 : 0.22} />
           <stop offset="0.55" stopColor="#fff" stopOpacity="0" />
-          <stop offset="1" stopColor="#102A43" stopOpacity="0.16" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.16" />
         </linearGradient>
         <radialGradient id={`sp-vig-${uid}`} cx="50%" cy="45%" r="75%">
-          <stop offset="0.6" stopColor="#102A43" stopOpacity="0" />
-          <stop offset="1" stopColor="#102A43" stopOpacity="0.18" />
+          <stop offset="0.6" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.18" />
         </radialGradient>
       </defs>
       <g clipPath={`url(#sp-clip-${uid})`}>

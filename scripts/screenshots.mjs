@@ -309,13 +309,13 @@ scenarios.push(
     },
   },
   {
-    // RF-14: the projector safety switch (Demo sheet → Map style → Light).
+    // The optional dark map (Demo sheet → Map style → Dark). Light is the default since the colour revert.
     session: 'S3',
-    file: '14-map-light-style',
+    file: '14-map-dark-style',
     route: '#/app',
     init: async (context) => {
       await asDriver(context)
-      await context.addInitScript(() => localStorage.setItem('pp.mapStyle', 'light'))
+      await context.addInitScript(() => localStorage.setItem('pp.mapStyle', 'dark'))
     },
     setup: waitForMap,
   },

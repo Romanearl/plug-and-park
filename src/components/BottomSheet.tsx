@@ -22,6 +22,11 @@ export function BottomSheet({
   footer?: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  // Most screens pass a new onClose function on every render. Keep the latest one in a ref, so the
+  // effect below runs only when the sheet opens or closes — otherwise every re-render of the screen
+  // (e.g. the other phone saving something) pulled the focus back to the first control of the sheet.
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
   useEffect(() => {
     if (!open) return
     const opener = document.activeElement as HTMLElement | null
@@ -30,7 +35,7 @@ export function BottomSheet({
       [...(ref.current?.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') ?? [])].filter((el) => !el.hasAttribute('disabled'))
     window.setTimeout(() => focusables()[0]?.focus({ preventScroll: true }), 0)
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') closeRef.current()
       if (e.key !== 'Tab') return
       const els = focusables()
       if (!els.length) return
@@ -49,7 +54,7 @@ export function BottomSheet({
       window.removeEventListener('keydown', onKey)
       if (opener && document.contains(opener)) opener.focus({ preventScroll: true })
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
   return (

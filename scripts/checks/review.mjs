@@ -360,6 +360,28 @@ async function press(p, loc, fy = 0.5) {
   await ctx.close()
 }
 
+// CR-12 — leaving the map in the middle of a zoom animation threw "Cannot read properties of undefined (reading '_leaflet_pos')".
+{
+  const ctx = await browser.newContext(PHONE)
+  const p = await page(ctx, 'u_driver_demo')
+  const before = errors.length
+  for (const delay of [0, 80, 160]) {
+    await p.goto('about:blank')
+    await p.goto(BASE + '#/app')
+    await p.locator('.pin').first().waitFor({ timeout: 15000 })
+    await p.waitForTimeout(700)
+    await p.getByRole('button', { name: /Where do you need/ }).click()
+    await p.getByRole('dialog', { name: 'Choose a district' }).getByRole('button', { name: /Yuen Long/ }).click()
+    await p.waitForTimeout(delay)
+    await p.getByRole('button', { name: 'Account' }).click()
+    await p.waitForTimeout(900)
+  }
+  check('CR-12 pick a district and switch tab at once (3 timings): no error from the removed map', errors.length === before, errors.slice(before).join(' | '))
+  await p.getByRole('button', { name: 'Explore' }).click()
+  check('CR-12 …and the map comes back with its pins', await seen(p.locator('.pin').first(), 8000))
+  await ctx.close()
+}
+
 await browser.close()
 check('No console errors or warnings during the review checks', errors.length === 0, [...new Set(errors)].slice(0, 5).join(' | '))
 console.log(results.join('\n'))

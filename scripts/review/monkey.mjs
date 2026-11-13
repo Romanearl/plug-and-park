@@ -60,7 +60,8 @@ let spinnerSince = 0
 let idleOut = 0
 while (Date.now() - t0 < MS) {
   if (!page.url().startsWith(BASE)) {
-    note(`left the app: ${page.url()}`)
+    // The monkey's own browser Back from the first history entry leaves by design; anything else is a finding.
+    if (steps[steps.length - 1] !== 'browser Back') note(`left the app: ${page.url()}`)
     await signIn()
   }
   // Signed out (reset / sign out) or on the presenter page: after a few steps, come back in.

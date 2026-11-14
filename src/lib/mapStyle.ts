@@ -1,6 +1,6 @@
-// Map style: the light greyed map is the default; "Dark" can be switched on in the demo sheet.
+// Map style (RF-14): the map is dark by default; "Light" is a projector safety switch in the demo sheet.
 // The choice lives in localStorage and syncs across windows (both phones in the presenter view switch together).
-// It only sets <html data-map-style>, which swaps the --map-filter token and the map background in app.css.
+// It only sets <html data-map-style>, which swaps the --map-filter / --map-bg tokens in app.css.
 
 import { useSyncExternalStore } from 'react'
 
@@ -11,9 +11,9 @@ let current: MapStyle = read()
 
 function read(): MapStyle {
   try {
-    return localStorage.getItem(KEY) === 'dark' ? 'dark' : 'light'
+    return localStorage.getItem(KEY) === 'light' ? 'light' : 'dark'
   } catch {
-    return 'light' // storage blocked: the demo still works in memory
+    return 'dark' // storage blocked: the demo still works in memory
   }
 }
 

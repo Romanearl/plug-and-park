@@ -1,4 +1,4 @@
-// Copies Roman's app icon from "Claude outputs1/app-icon/" into public/. It never draws an icon itself.
+// Copies Roman's app icon from "Claude outputs1/app-icon-navy/" into public/. It never draws an icon itself.
 //   node scripts/make-icons.mjs
 // The files are shipped byte-for-byte (scripts/checks/icon.mjs verifies it). After changing the icon,
 // bump the ?v= number in index.html and public/manifest.webmanifest so phones drop the cached one.
@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { ROOT } from './lib/server.mjs'
 
-export const ICON_SOURCE = path.join(ROOT, 'Claude outputs1', 'app-icon')
+export const ICON_SOURCE = path.join(ROOT, 'Claude outputs1', 'app-icon-navy')
 /** Source file name → path inside public/. */
 export const ICON_FILES = {
   'favicon.svg': 'favicon.svg',

@@ -8,7 +8,8 @@ import { chromium } from 'playwright'
 import { ROOT } from './lib/server.mjs'
 
 const BASE = process.env.PP_BASE ?? 'http://localhost:4173/plug-and-park/'
-const out = path.join(ROOT, 'Claude outputs1', 'screenshots', 'COLOUR-REVERT')
+// Output folder: COLOUR-REVERT by default, or the folder named as the first argument (e.g. NAVY-RESTORE).
+const out = path.join(ROOT, 'Claude outputs1', 'screenshots', process.argv[2] ?? 'COLOUR-REVERT')
 fs.mkdirSync(out, { recursive: true })
 const b = await chromium.launch()
 const p = await b.newPage({ deviceScaleFactor: 2 })

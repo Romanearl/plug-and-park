@@ -1,3 +1,9 @@
+# ✅ DONE (v1.3-demo) AND THEN REVERSED — DO NOT RUN AGAIN
+
+> This task was finished on 13 Nov 2026. On 14 Nov Roman chose the navy design again, so its result is undone by **`NAVY_RESTORE_AND_ICON_TASK.md`**. Never act on this file again.
+
+---
+
 # COLOUR_REVERT_AND_ICON_TASK — Back to the black-and-blue design, new app icon
 
 **Written by:** the reviewer, 13 Nov 2026 · **Approved by Roman:** 13 Nov 2026 · **Presentation:** Fri 20 Nov 2026

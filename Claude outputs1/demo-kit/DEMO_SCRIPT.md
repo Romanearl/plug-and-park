@@ -55,5 +55,6 @@
 | A phone is in the wrong state or shows old data | Click **Reset demo** under the phones (it resets both), then start again from 0:15. |
 | You tapped the wrong thing | Use the round **←** back button at the top left of that phone. |
 | The driver's phone didn't flip after Approve | Wait 1 second; if still nothing, tap **Bookings** on the driver phone and open the booking. |
+| A request stays on "Waiting…" | Demo strip → **Pending requests** → **Approve**. |
 | No internet at all, or the page won't load | Switch to the **backup video** tab and press play. Narrate over it with the same lines. |
 | Running out of time | Jump to the **Short version** above, or skip the charging wait with **Demo → Skip charging to the end**. |

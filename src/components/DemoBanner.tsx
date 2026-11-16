@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { DEMO_ACCOUNTS, DEMO_CARDS, DEMO_OTP, DEMO_PASSWORD } from '../data/seed'
 import { navigate } from '../lib/router'
 import { platformApprove, platformRequestChanges } from '../lib/applyActions'
-import { completeSession } from '../lib/bookingActions'
+import { approveBooking, completeSession, declineBooking } from '../lib/bookingActions'
+import { hhmm } from '../lib/booking'
+import { fmtDate } from '../lib/util'
 import { setMapStyle, useMapStyle } from '../lib/mapStyle'
 import { resetDemo, signIn, useCurrentUser, useDB } from '../lib/store'
 import { BottomSheet } from './BottomSheet'
@@ -32,6 +34,8 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const db = useDB()
   const active = user ? db.bookings.find((b) => b.driverId === user.id && b.status === 'active') : undefined
   const inReview = db.spots.filter((s) => s.reviewStatus === 'in_review')
+  const pending = db.bookings.filter((b) => b.status === 'pending').sort((a, b) => a.start.localeCompare(b.start))
+  const nameOf = (userId: string, fallback: string) => db.users.find((u) => u.id === userId)?.name ?? fallback
   const [confirmReset, setConfirmReset] = useState(false)
   const mapStyle = useMapStyle()
 
@@ -176,6 +180,40 @@ function DemoSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
               </div>
             </li>
           ))}
+        </ul>
+      )}
+
+      <div className="overline muted" style={{ marginTop: 22 }}>
+        Pending requests
+      </div>
+      {pending.length === 0 ? (
+        <p className="caption" style={{ marginTop: 6 }}>
+          No pending requests.
+        </p>
+      ) : (
+        <ul className="admin-list">
+          {pending.map((b) => {
+            const spot = db.spots.find((s) => s.id === b.spotId)
+            const start = new Date(b.start)
+            return (
+              <li key={b.id} data-admin-booking={b.id}>
+                <div style={{ fontWeight: 600 }} className="clamp-2">
+                  {nameOf(b.driverId, 'Driver')} → {spot?.title ?? 'Charger'}
+                </div>
+                <div className="caption">
+                  {fmtDate(start)} · {hhmm(start)} · {b.durationMinutes >= 60 ? `${b.durationMinutes / 60} h` : `${b.durationMinutes} min`} · Owner {nameOf(b.ownerId, 'Owner')}
+                </div>
+                <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                  <button className="btn btn-primary sm" style={{ flex: 1 }} onClick={() => approveBooking(b.id)}>
+                    Approve
+                  </button>
+                  <button className="btn btn-secondary sm" style={{ flex: 1 }} onClick={() => declineBooking(b.id, 'Other')}>
+                    Decline
+                  </button>
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
 

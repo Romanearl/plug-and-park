@@ -22,6 +22,9 @@ export const DEMO_CARDS = {
 /** Platform commission (proposal: 15–20%). */
 export const COMMISSION_RATE = 0.18
 
+/** Requests to spots of owners other than the demo owner are approved automatically this long after they were made. */
+export const AUTO_APPROVE_MS = 5000
+
 const WEEKDAYS_9_TO_7: AvailabilityWindow[] = [1, 2, 3, 4, 5].map((day) => ({ day, start: '08:30', end: '19:00' }))
 const EVERY_DAY = (start: string, end: string): AvailabilityWindow[] =>
   [0, 1, 2, 3, 4, 5, 6].map((day) => ({ day, start, end }))

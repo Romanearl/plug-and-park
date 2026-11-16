@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { DemoBanner } from './components/DemoBanner'
 import { Notifier } from './components/Notifier'
+import { AutoApprover } from './components/AutoApprover'
 import { StorageNotice } from './components/StorageNotice'
 import { PhoneFrame } from './components/PhoneFrame'
 import { RequireRole } from './components/RequireRole'
@@ -108,6 +109,7 @@ export function App() {
       <Router routes={routes} fallback={() => <NotFound />} />
       <StorageNotice />
       <Notifier />
+      <AutoApprover />
     </PhoneFrame>
   )
 }

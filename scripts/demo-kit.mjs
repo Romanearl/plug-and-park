@@ -18,7 +18,9 @@ mk(KIT, 'screens', 'framed')
 mk(KIT, 'screens', 'flow')
 mk(ROOT, 'docs')
 
-const WORDMARK = `<div style="width:120px;height:120px;background:#68A8E8;color:#102A43;font:400 28px/1.02 'Libre Caslon Text',Georgia,serif;display:flex;flex-direction:column;justify-content:center;padding:0 16px;border-radius:10px"><span>Plug &amp;</span><span>Park</span></div>`
+// Roman's logo, the same file as the iOS app icon (Claude outputs1/app-icon-navy/apple-touch-icon.png).
+const LOGO = 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'Claude outputs1', 'app-icon-navy', 'apple-touch-icon.png')).toString('base64')
+const WORDMARK = `<img src="${LOGO}" alt="Plug &amp; Park" style="display:block;width:120px;height:120px;border-radius:16px">`
 const FONTS = `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Libre+Caslon+Text&display=swap" rel="stylesheet">`
 
 // Visible tap dot for recordings only (injected by this script, never shipped in the app).

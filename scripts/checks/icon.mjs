@@ -4,6 +4,7 @@
 //  2. PNGs have the size their name or manifest entry claims.
 //  3. What ships is byte-identical to Roman's navy files in "Claude outputs1/app-icon-navy/".
 //  4. No old "P&P" / bolt icon and no blue-square icon (the archived "Claude outputs1/app-icon/") ships.
+//  5. The in-app logo (landing, phone-frame caption, presenter) is Roman's apple-touch-icon.png (Roman, 16 Nov 2026).
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -98,6 +99,33 @@ const navySvg = fs.readFileSync(path.join(SOURCE, 'favicon.svg'), 'utf8')
 check('The navy source is a navy square with a mint "&"', /<rect[^>]*fill="#102A43"/i.test(navySvg) && /fill="#4EE4B6"/i.test(navySvg))
 check('make-icons.mjs reads app-icon-navy/', /'app-icon-navy'/.test(fs.readFileSync(path.join(ROOT, 'scripts', 'make-icons.mjs'), 'utf8')))
 check('make-icons.mjs copies files and never draws an icon', !/setContent|screenshot|<svg/.test(fs.readFileSync(path.join(ROOT, 'scripts', 'make-icons.mjs'), 'utf8')))
+
+// ── 5: the in-app logo is Roman's apple-touch-icon.png (no serif text wordmark any more) ──
+{
+  const { chromium } = await import('playwright')
+  const browser = await chromium.launch()
+  try {
+    const want = sha(fs.readFileSync(path.join(SOURCE, 'apple-touch-icon.png')))
+    for (const [label, url, vp] of [
+      ['landing', BASE + '#/', { width: 390, height: 844 }],
+      ['phone-frame caption (1440×900)', BASE + '#/', { width: 1440, height: 900 }],
+      ['presenter "needs a laptop" screen (800×600)', BASE + '#/presenter', { width: 800, height: 600 }],
+    ]) {
+      const page = await browser.newPage({ viewport: vp })
+      await page.goto(url)
+      const logo = page.locator('img.wordmark').last()
+      await logo.waitFor({ timeout: 5000 }).catch(() => {})
+      await page.waitForFunction(() => [...document.querySelectorAll('img.wordmark')].every((i) => i.complete), null, { timeout: 5000 }).catch(() => {})
+      const info = await logo.evaluate((el) => ({ src: el.currentSrc || el.src, loaded: el.complete && el.naturalWidth > 0, alt: el.alt, w: el.getBoundingClientRect().width })).catch(() => null)
+      const served = info ? await fetchBuf(info.src) : null
+      check(`In-app logo on the ${label} is apple-touch-icon.png from app-icon-navy/ (byte-identical, loaded)`, !!info && info.loaded && info.alt === 'Plug & Park' && !!served && sha(served.buf) === want, info ? `${info.src} ${Math.round(info.w)}px` : 'no img.wordmark')
+      check(`…no serif "Plug &" text wordmark on the ${label}`, (await page.locator('span.wordmark').count()) === 0)
+      await page.close()
+    }
+  } finally {
+    await browser.close()
+  }
+}
 
 console.log(results.join('\n'))
 const failed = results.filter((r) => r.startsWith('FAIL')).length

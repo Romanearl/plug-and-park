@@ -1,14 +1,12 @@
 import { cx } from '../lib/util'
 
 /**
- * "Plug &" / "Park" stacked in serif, navy on a sky-blue square. Our own mark — not a copy of any logo.
- * The final logo is being designed separately: swap it in here (and in scripts/make-icons.mjs for the icons).
+ * Roman's logo (white "Plug" / "Park", mint "&", navy square): the same file as the iOS app icon,
+ * Claude outputs1/app-icon-navy/apple-touch-icon.png, shipped as public/icons/apple-touch-icon.png
+ * by scripts/make-icons.mjs. Never draw a logo here.
  */
+export const LOGO_SRC = `${import.meta.env.BASE_URL}icons/apple-touch-icon.png?v=3`
+
 export function Wordmark({ size = 'md', className }: { size?: 'sm' | 'md' | 'lg'; className?: string }) {
-  return (
-    <span className={cx('wordmark', size, className)} role="img" aria-label="Plug & Park">
-      <span aria-hidden>Plug &amp;</span>
-      <span aria-hidden>Park</span>
-    </span>
-  )
+  return <img className={cx('wordmark', size, className)} src={LOGO_SRC} alt="Plug & Park" draggable={false} />
 }

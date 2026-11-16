@@ -318,14 +318,13 @@ svg { display: block; flex-shrink: 0; }
 /* ── Wordmark ─────────────────────────────────────────────────────────── */
 
 .wordmark {
-  display: inline-flex; flex-direction: column; justify-content: center; align-items: flex-start;
-  background: var(--blue); color: var(--ink);
-  font-family: var(--font-serif); font-weight: 400; line-height: 1.02;
-  flex-shrink: 0; user-select: none; white-space: nowrap;
+  /* Roman's logo image (navy square, white "Plug" / "Park", mint "&"). */
+  display: block; flex-shrink: 0; object-fit: cover; user-select: none; -webkit-user-drag: none;
+  background: var(--ink);
 }
-.wordmark.sm { width: 44px; height: 44px; font-size: 11px; padding: 0 4px; border-radius: 4px; letter-spacing: -0.02em; }
-.wordmark.md { width: 72px; height: 72px; font-size: 17px; padding: 0 9px; border-radius: 6px; }
-.wordmark.lg { width: 112px; height: 112px; font-size: 26px; padding: 0 14px; border-radius: 8px; }
+.wordmark.sm { width: 44px; height: 44px; border-radius: 6px; }
+.wordmark.md { width: 72px; height: 72px; border-radius: 10px; }
+.wordmark.lg { width: 112px; height: 112px; border-radius: 14px; }
 
 /* ── Demo banner ──────────────────────────────────────────────────────── */
 

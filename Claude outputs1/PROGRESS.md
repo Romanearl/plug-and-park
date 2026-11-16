@@ -1,6 +1,6 @@
-# Progress            Last updated: Mon 16 Nov 2026 (navy restore + navy app icon done, tag v1.4-demo)
+# Progress            Last updated: Mon 16 Nov 2026 (booking auto-approve done, tag v1.4.1-demo)
 Repo: https://github.com/Romanearl/plug-and-park (public)
-Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 26eac76 (NAVY-RESTORE)
+Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 5b43696 (APPROVE)
 
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599
@@ -81,6 +81,11 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 26e
 - `contrast.mjs` back to v1.2.1-review + guards (group pins, no white outline, no black-and-blue tokens). KNOWN: --danger on --danger-tint 4.19:1.
 - check 12/12; smoke Chromium/WebKit/Firefox + live pass; all sessions re-shot; `screenshots/NAVY-RESTORE/`; demo kit regenerated (DEMO_SCRIPT = v1.2.1-review).
 - Needs Roman: re-add the iPhone home-screen shortcut; projector check of the dark map (fallback Map style → Light).
+
+## Booking requests never get stuck (BOOKING_APPROVE_TASK.md) — done Mon 16 Nov 2026, tag v1.4.1-demo
+- Report: `APPROVE_REPORT.md`. Requests to spots of owners other than Wong Mei Ling are auto-approved `AUTO_APPROVE_MS` (5000) after `createdAt` via `approveBooking()` (`src/lib/autoApprove.ts`, app-wide `src/components/AutoApprover.tsx`). Wong Mei Ling's stay manual (scripted demo unchanged).
+- Demo sheet: "Pending requests" (any owner) with Approve / Decline ("Other"), empty state "No pending requests.". DEMO_SCRIPT: one troubleshooting row added.
+- `npm run check` 13/13 (new `approve.mjs` 38); smoke Chromium/WebKit/Firefox + live pass; approve.mjs passes on live; shots in `screenshots/APPROVE/`.
 
 ## Skipped / needs a human
 - (none)

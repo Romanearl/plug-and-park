@@ -1,6 +1,6 @@
-# Progress            Last updated: Fri 13 Nov 2026 (colour revert + new app icon done)
+# Progress            Last updated: Mon 16 Nov 2026 (navy restore + navy app icon done, tag v1.4-demo)
 Repo: https://github.com/Romanearl/plug-and-park (public)
-Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: dc5785c (COLOUR-REVERT)
+Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 26eac76 (NAVY-RESTORE)
 
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599
@@ -74,6 +74,13 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: dc5
 - Every selected or active state is now blue: filter, sort, day, time and duration chips; role and payout cards (`--blue` fill, black text, 7:1); active tab, text links, switches, checkbox, price slider, current booking step (`--blue-deep`); sheet handles and progress bars (`--blue`). Primary buttons, map pins and the landing page stay black. CSS only (`src/styles/app.css`), commit 7eef699.
 - `contrast.mjs` updated (selected chip/slot/sort blue, handle blue, tab and switch deep blue). check 12/12, smoke Chromium/WebKit/Firefox pass, all sessions re-shot, demo kit regenerated.
 - **Proposed `CLAUDE.md` §6 change (for the reviewer; I did not edit CLAUDE.md):** replace "Selected chips, slots and tabs are black with white text." with "Selected chips, time slots, duration and sort options: `--blue` fill with black text. Active tab, links, switches, checkboxes, sliders and the current step: `--blue-deep`. Sheet handles and progress bars: `--blue`. Primary buttons and map pins stay black. Never white text on `--blue` except the wordmark." and change `.chip.active (black, white text)` to `(blue, black text)`.
+
+## Navy restore + navy app icon (NAVY_RESTORE_AND_ICON_TASK.md) — done Mon 16 Nov 2026, tag v1.4-demo
+- Report: `NAVY-RESTORE_REPORT.md`. Undoes v1.3-demo and More blue: `src/` is byte-identical to `v1.2.1-review` (navy, sky blue, mint; dark map default; every CR-* fix kept).
+- App icon: Roman's navy logo (mint &) from `Claude outputs1/app-icon-navy/`, byte-for-byte, `?v=3`; `icon.mjs` fails on any blue-square / P&P icon. `app-icon/` kept as archive only.
+- `contrast.mjs` back to v1.2.1-review + guards (group pins, no white outline, no black-and-blue tokens). KNOWN: --danger on --danger-tint 4.19:1.
+- check 12/12; smoke Chromium/WebKit/Firefox + live pass; all sessions re-shot; `screenshots/NAVY-RESTORE/`; demo kit regenerated (DEMO_SCRIPT = v1.2.1-review).
+- Needs Roman: re-add the iPhone home-screen shortcut; projector check of the dark map (fallback Map style → Light).
 
 ## Skipped / needs a human
 - (none)

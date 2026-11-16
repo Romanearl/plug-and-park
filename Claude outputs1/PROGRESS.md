@@ -1,6 +1,6 @@
-# Progress            Last updated: Mon 16 Nov 2026 (booking auto-approve done, tag v1.4.1-demo)
+# Progress            Last updated: Mon 16 Nov 2026 (in-app logo = Roman's icon)
 Repo: https://github.com/Romanearl/plug-and-park (public)
-Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 5b43696 (APPROVE)
+Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 3d9bced (LOGO)
 
 ## Sessions
 - [x] S1 Foundation — done 11 Nov, commit 1607599
@@ -86,6 +86,12 @@ Live URL: https://romanearl.github.io/plug-and-park/      Last green deploy: 5b4
 - Report: `APPROVE_REPORT.md`. Requests to spots of owners other than Wong Mei Ling are auto-approved `AUTO_APPROVE_MS` (5000) after `createdAt` via `approveBooking()` (`src/lib/autoApprove.ts`, app-wide `src/components/AutoApprover.tsx`). Wong Mei Ling's stay manual (scripted demo unchanged).
 - Demo sheet: "Pending requests" (any owner) with Approve / Decline ("Other"), empty state "No pending requests.". DEMO_SCRIPT: one troubleshooting row added.
 - `npm run check` 13/13 (new `approve.mjs` 38); smoke Chromium/WebKit/Firefox + live pass; approve.mjs passes on live; shots in `screenshots/APPROVE/`.
+
+## In-app logo (Roman in chat, Mon 16 Nov 2026: "change it to Claude outputs1/app-icon-navy/apple-touch-icon.png") — done, commit 3d9bced
+- The sky-blue serif "Plug & / Park" wordmark is replaced by Roman's `apple-touch-icon.png` (served as `icons/apple-touch-icon.png?v=3`) on the landing, the phone-frame caption, the presenter's small-screen message and the demo-kit QR slide. `Wordmark.tsx` keeps its name and sizes (44/72/112 px).
+- The favicon / iOS / PWA icons were already the navy files (verified byte-for-byte on the live site); a browser that still shows an old tab icon has it cached.
+- `icon.mjs` +6 checks (54): the in-app logo is that exact file and no serif text wordmark is left. check 13/13, smoke Chromium/WebKit/Firefox + live pass; all sessions re-shot; demo kit regenerated.
+- **Proposed `CLAUDE.md` §6 change (for the reviewer; I did not edit the master):** replace the "Wordmark (in the app): … serif … navy on a sky-blue square" bullet with "In-app logo: Roman's logo image (`app-icon-navy/apple-touch-icon.png`), the same as the app icon. Never draw a wordmark." Libre Caslon Text is now unused (still loaded in index.html; can be dropped).
 
 ## Skipped / needs a human
 - (none)
